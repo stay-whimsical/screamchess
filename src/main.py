@@ -6,9 +6,12 @@ are usually implemented in other modules in the package.
 """
 import sys
 from collections import namedtuple
+from events import Events
 
 import gamestate
 import camera
+
+EVENTS = Events()
 
 
 def print_welcome():
@@ -23,7 +26,7 @@ def print_welcome():
 ░  ░  ░  ░          ░░   ░    ░    ░   ▒   ░      ░      ░         ░  ░░ ░   ░   ░  ░  ░  ░  ░  ░
       ░  ░ ░         ░        ░  ░     ░  ░       ░      ░ ░       ░  ░  ░   ░  ░      ░        ░
          ░                                               ░
-                                          by Karblo
+                                          by Karblora
 
 Instructions:
 """
@@ -39,15 +42,17 @@ def print_directions():
     print('Until I can look up something better, remember to Ctrl-D to send the newline. Python rules')
 
 
-def quit(state):
+def quit(state, events):
+    events.quit()
     return gamestate.Gamestate(current_game=state.current_game, should_go_on=False)
 
 
-def reset_state(state):
+def reset_state(state, events):
+    events.reset()
     return gamestate.fresh_gamestate()
 
 
-def print_state(state):
+def print_state(state, events):
     print(state)
     return state
 
@@ -95,7 +100,9 @@ def on_press(char, state):
     """
     for instruction in INSTRUCTIONS:
         if char == instruction.keystroke:
-            return instruction.function(state)
+            return instruction.function(state, EVENTS)
+    print('I don\'t understand, please try again!')
+    return state
 
 
 def listen_for_keystrokes():
@@ -103,9 +110,17 @@ def listen_for_keystrokes():
     while True:
         print('Give me a command: ')
         char = sys.stdin.read(1)
-        new_state = on_press(char, state)
-        if not new_state.should_go_on:
-            break
+        if char != '\n':
+            new_state = on_press(char, state)
+            if not new_state.should_go_on:
+                break
+
+
+def on_camera_start():
+    print('Got an event!')
+
+
+EVENTS.start_camera += on_camera_start
 
 
 if __name__ == '__main__':
