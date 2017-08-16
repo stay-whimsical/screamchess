@@ -5,7 +5,7 @@ chess to appropriately construct board instances.
 That said, this drives the main event loop; it's up to this code to use the
 camera to determine when a move has occurred and what it even was.
 """
-from src.gamestate import Gamestate
+from gamestate import Gamestate
 
 
 def start_event_loop(state):
