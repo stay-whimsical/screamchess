@@ -130,7 +130,6 @@ def col_white(pixels, col, threshold):
                 return False
     return True
 
-
 def process_squares(image, num_squares, qr, color, shrink=0):
     """Iterate over the squares in the image to process each for qrcodes.
 
@@ -213,5 +212,3 @@ def color_in_square(colors, color):
     # There will be some noise - but it doesn't matter, we're looking for our
     # specific colors
     return color in colors
-
-
