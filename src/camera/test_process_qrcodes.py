@@ -2,10 +2,11 @@ import unittest
 import src.camera.process_img as pi
 import time
 
+
+
 class TestBoardState(unittest.TestCase):
 
     def test_start_state(self):
-
         state = pi.get_board_state('src/camera/qrcodes/large_setup.png')
         self.assertEquals(state, [['BR1', 'BP1', 0, 0, 0, 0, 'WP1', 'WR1'],
                                   ['BK1', 'BP2', 0, 0, 0, 0, 'WP2', 'WK1'],
@@ -19,6 +20,18 @@ class TestBoardState(unittest.TestCase):
     def test_start_state_rotated(self):
         state = pi.get_board_state(
             'src/camera/qrcodes/large_setup_rotated.png')
+        self.assertEquals(state, [['BR1', 'BP1', 0, 0, 0, 0, 'WP1', 'WR1'],
+                                  ['BK1', 'BP2', 0, 0, 0, 0, 'WP2', 'WK1'],
+                                  ['BB1', 'BP3', 0, 0, 0, 0, 'WP3', 'WB1'],
+                                  ['BQ', 'BP4', 0, 0, 0, 0, 'WP4', 'WQ'],
+                                  ['BK', 'BP5', 0, 0, 0, 0, 'WP5', 'WK'],
+                                  ['BB2', 'BP6', 0, 0, 0, 0, 'WP6', 'WB2'],
+                                  ['BK2', 'BP7', 0, 0, 0, 0, 'WP7', 'WK2'],
+                                  ['BR2', 'BP8', 0, 0, 0, 0, 'WP8', 'WR2']])
+
+    def test_downscaled_state_rotated(self):
+        state = pi.get_board_state(
+            'src/camera/qrcodes/downscaled_setup_rotated.png', resize=True)
         self.assertEquals(state, [['BR1', 'BP1', 0, 0, 0, 0, 'WP1', 'WR1'],
                                   ['BK1', 'BP2', 0, 0, 0, 0, 'WP2', 'WK1'],
                                   ['BB1', 'BP3', 0, 0, 0, 0, 'WP3', 'WB1'],
