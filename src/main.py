@@ -11,7 +11,6 @@ import logging
 
 import gamestate
 import camera
-import logging
 import media
 
 logging.basicConfig()
@@ -116,10 +115,11 @@ def on_press(char, state):
 
 def listen_for_keystrokes():
     state = gamestate.fresh_gamestate()
+    print('Give me a command: ')
     while True:
-        print('Give me a command: ')
         char = sys.stdin.read(1)
         if char != '\n':
+            print('Command: ')
             new_state = on_press(char, state)
             if not new_state.should_go_on:
                 break
