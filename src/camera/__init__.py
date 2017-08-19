@@ -51,7 +51,6 @@ def _show_webcam(events, id=0):
 #        ret_val, img = cam.read()
 #        cv2.imshow("my webcam oh god please", img)
         img = "ell oh ell"
-        log.debug("hi hi hi")
         events.new_image(img)
 
 

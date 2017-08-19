@@ -114,13 +114,18 @@ def listen_for_keystrokes():
             new_state = on_press(char, state)
             if not new_state.should_go_on:
                 break
+            state = new_state
 
 
 def on_camera_start():
     print('Got an event!')
 
 
+def receive_new_image(msg):
+    print(msg)
+
 EVENTS.start_camera += on_camera_start
+EVENTS.new_image += receive_new_image
 
 
 if __name__ == '__main__':
