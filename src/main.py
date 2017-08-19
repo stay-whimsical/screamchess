@@ -7,10 +7,14 @@ are usually implemented in other modules in the package.
 import sys
 from collections import namedtuple
 from events import Events
+import logging
 
 import gamestate
 import camera
+import logging
+import media
 
+logging.basicConfig()
 EVENTS = Events()
 
 
@@ -86,6 +90,11 @@ INSTRUCTIONS = [
         name='Advance move',
         description='',
         function=None),
+    Instruction(
+        keystroke='t',
+        name='Test sound',
+        description='Play a sound for me!',
+        function=media.test_sound),
     Instruction(
         keystroke='q',
         name='Quit',
