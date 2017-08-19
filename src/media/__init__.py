@@ -8,6 +8,9 @@ from collections import namedtuple
 PieceSpec = namedtuple('PieceSpec', 'piece action')
 
 
+sound.create_sound_bank()
+
+
 def test_sound(gamestate, events):
-    sound.play_sound(PieceSpec(piece='white king', action='move'))
+    sound.play_sound(PieceSpec(piece='white king', action=sound.Actions.Move))
     return gamestate

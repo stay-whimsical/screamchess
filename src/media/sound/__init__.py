@@ -9,17 +9,24 @@ violence to software engineering principles while we're here.
 (after all, this is Python, hyuk hyuk hyuk)
 """
 import os
+import platform
+import random
+import re
 import subprocess
 import threading
-import platform
 
+from enum import Enum
+# from collections import namedtuple
+
+Actions = Enum('Actions', 'Kill Move Die Lift Boo Castle')
 
 ACTIONS_MAP = {
-    'kill': 'kill',
-    'move': 'move',
-    'die': 'die',
-    'lift': 'lift',
-    'boo': 'boo'
+    Actions.Kill: 'kill',
+    Actions.Move: 'move',
+    Actions.Die: 'die',
+    Actions.Lift: 'lift',
+    Actions.Boo: 'boo',
+    Actions.Castle: 'castle'
 }
 
 
@@ -64,10 +71,36 @@ MAC_COMMAND = "afplay"
 PI_COMMAND = "aplay"
 
 
+ASSET_BANK = {}
+
+
 if platform.system() == 'Darwin':
     PLAYSOUND_COMMAND = MAC_COMMAND
 else:
     PLAYSOUND_COMMAND = PI_COMMAND
+
+
+def create_sound_bank():
+    """
+    Each character has a variable number of sounds for a given action (i.e.
+    three move queues, two die cues, one kill). While we don't load the sounds
+    themselves, we still investigate the filesystem to collect metadata: namely
+
+    * Piece-by-piece breakdown of how many of which actions it has (so we can select
+      them sequentially, or randomly).
+
+    * Investigate the metadata file so we can do things like print credits.
+    """
+    for piece_name in PIECE_MAP.itervalues():
+        path = _asset_path(piece_name)
+        files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+        action_counts = {key: 0 for key in ACTIONS_MAP.itervalues()}
+        for f in files:
+            for action in ACTIONS_MAP.itervalues():
+                if re.match(action, f):
+                    curr = action_counts[action]
+                    action_counts[action] = curr + 1
+        ASSET_BANK[piece_name] = action_counts
 
 
 def play_sound(piece):
@@ -82,7 +115,11 @@ def _sound_for_piece(piece_spec):
     """
     Placeholder for real logic, as it comes.
     """
-    return '{}/{}{}.wav'.format(PIECE_MAP[piece_spec.piece], ACTIONS_MAP[piece_spec.action], 0)
+    piece_name = PIECE_MAP[piece_spec.piece]
+    action_name = ACTIONS_MAP[piece_spec.action]
+    action_index_max = ASSET_BANK[piece_name][action_name]
+    action_index = random.randint(0, action_index_max - 1)
+    return '{}/{}{}.wav'.format(piece_name, action_name, action_index)
 
 
 def _play_sound_async(soundfile):
@@ -91,5 +128,9 @@ def _play_sound_async(soundfile):
 
 
 def _play_sound(soundfile):
-    filepath = os.path.abspath(os.path.join('./', 'assets', soundfile))
+    filepath = _asset_path(soundfile)
     subprocess.call([PLAYSOUND_COMMAND, filepath], stdin=None, stdout=None, stderr=None)
+
+
+def _asset_path(piece_dir):
+    return os.path.abspath(os.path.join('./', 'assets', piece_dir))
