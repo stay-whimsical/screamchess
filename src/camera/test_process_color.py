@@ -5,8 +5,34 @@ import numpy as np
 
 
 class TestGetColors(unittest.TestCase):
-
+    """
+    Hue range [0,179], Saturation range is [0,255] and Value range is [0,255]
+    """
     def test_initial_state(self):
+        start = time.time()
+        color_map = {'WB': (np.array([110, 50, 50]),   # light blue
+                            np.array([130, 255, 255])),  # Also BK with dot
+                     'BB': (np.array([222, 50, 50]),   # dark blue
+                             np.array([243, 255, 255])), # Also BR with dot
+                     'WP': (np.array([57, 50, 50]),    # green
+                             np.array([96, 255, 255])),  # also BQ with dot
+                     'WR': (np.array([110, 50, 50]),   # purple
+                             np.array([130, 255, 255])), # also WK with dot
+                     'BP': (np.array([351, 50, 50]),   # red
+                             np.array([360, 255, 255])), # also WQ with dot
+                     'WP': (np.array([25, 50, 50]),    # yellow
+                             np.array([55, 255, 255])), # also WK with dot
+                     }
+        state = pi.get_board_state('src/camera/captured_images/'
+                                   'finalll.png',
+                                   qr=False, color=True,
+                                   color_map=color_map)
+        print("got state", state)
+        end = time.time()
+        print('Got board state from colors in ', end - start)
+
+    @unittest.skip('This image is no longer up to snuff')
+    def test_better_light(self):
         start = time.time()
         color_map = {'WP1': (np.array([110, 50, 50]),   # light blue
                              np.array([130, 255, 255])),

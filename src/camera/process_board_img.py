@@ -255,7 +255,7 @@ def set_state_from_color(image, state, i, j, color_map, show_images=False):
             if len(c) < 10:
                 continue
             # draw the contour and show it
-            cv2.drawContours(mask, [c], -1, (230, 0, 0), 2)
+            cv2.drawContours(mask, [c], -1, (100, 100, 0), 2)
             show_image(mask)
 
         # TODO - do we actually need this counter check? Now that we can
