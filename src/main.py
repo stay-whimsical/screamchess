@@ -57,7 +57,8 @@ def reset_state(state, events):
 
 
 def print_state(state, events):
-    print(state)
+    print('board=\n{}'.format(str(state.current_game)))
+    print('should_go_on={}'.format(state.should_go_on))
     return state
 
 
