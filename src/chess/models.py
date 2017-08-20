@@ -46,12 +46,10 @@ class Pawn(BasePiece):
 
 
 class Move:
-  piece = None
   from_loc = None
   to_loc = None  
 
-  def __init__(self, from_loc, to_loc, piece=None):
-    self.piece = piece
+  def __init__(self, from_loc, to_loc):
     self.from_loc = from_loc
     self.to_loc = to_loc  
 
