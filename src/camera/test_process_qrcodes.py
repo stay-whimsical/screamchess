@@ -1,5 +1,5 @@
 import unittest
-import src.camera.process_img as pi
+import src.camera.process_board_img as pi
 import time
 
 
