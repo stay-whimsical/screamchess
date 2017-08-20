@@ -13,6 +13,7 @@ import gamestate
 import camera
 import media
 
+
 logging.basicConfig()
 EVENTS = Events()
 
@@ -29,7 +30,7 @@ def print_welcome():
 ░  ░  ░  ░          ░░   ░    ░    ░   ▒   ░      ░      ░         ░  ░░ ░   ░   ░  ░  ░  ░  ░  ░
       ░  ░ ░         ░        ░  ░     ░  ░       ░      ░ ░       ░  ░  ░   ░  ░      ░        ░
          ░                                               ░
-                                          by Karblora
+                                          by Karbloraide
 
 Instructions:
 """
