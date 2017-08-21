@@ -1,3 +1,9 @@
+"""
+Note - a better approach that I should try on the plane - is to
+get all the shapes of a certain color in the whole image - not just
+per square, and then find the center of those pieces, and
+"""
+
 import zbarlight
 from PIL import Image
 import numpy as np

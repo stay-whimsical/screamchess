@@ -1,3 +1,34 @@
+"""
+TODO: Instead, use image convolutions to really isolate the shapes
+of the blue squares, and then use the contours and get the centers of
+the shapes.
+
+
+    dilate(src, kernel[, dst[, anchor[, iterations[, borderType[, borderValue]]]]]) -> dst
+    .   @brief Dilates an image by using a specific structuring element.
+    .
+    .   The function dilates the source image using the specified structuring element that determines the
+    .   shape of a pixel neighborhood over which the maximum is taken:
+    .   \f[\texttt{dst} (x,y) =  \max _{(x',y'):  \, \texttt{element} (x',y') \ne0 } \texttt{src} (x+x',y+y')\f]
+    .
+    .   The function supports the in-place mode. Dilation can be applied several ( iterations ) times. In
+    .   case of multi-channel images, each channel is processed independently.
+    .
+    .   @param src input image; the number of channels can be arbitrary, but the depth should be one of
+    .   CV_8U, CV_16U, CV_16S, CV_32F or CV_64F.
+    .   @param dst output image of the same size and type as src\`.
+
+    .   @param kernel structuring element used for dilation; if elemenat=Mat(), a 3 x 3 rectangular
+    .   structuring element is used. Kernel can be created using getStructuringElement
+    .   @param anchor position of the anchor within the element; default value (-1, -1) means that the
+    .   anchor is at the element center.
+    .   @param iterations number of times dilation is applied.
+    .   @param borderType pixel extrapolation method, see cv::BorderTypes
+    .   @param borderValue border value in case of a constant border
+    .   @sa  erode, morphologyEx, getStructuringElement
+(END)
+
+"""
 import cv2
 import numpy as np
 import bisect
@@ -20,16 +51,15 @@ def get_square_centers_from_board(image_path, num_squares, show_images=False):
     """
     image = open_image(image_path)
     height, width, channels = image.shape
+    print('img height and widht = ', height, width)
 
-    contour_len_threshold = 10
-    num_pixel_threshold = 15
-
+    contour_len_threshold = 5
 
     centers = []
 
     # Hue range [0,179], Saturation range is [0,255] and Value range is [0,255]
     lower = np.array([100, 10, 50])  # light blue
-    upper = np.array([150, 150, 255]) # dark blue
+    upper = np.array([160, 150, 255]) # dark blue
 
     print('\033[33;1m SETUP MODE: Now processing image to get square '
           'centers\033[0m')
@@ -41,24 +71,40 @@ def get_square_centers_from_board(image_path, num_squares, show_images=False):
     if show_images:
         show_image(hsv)
 
+    # Blur the image to reduce some of the noise
+    # Blurring before the mask actually super increased the noise
+    # blurred = cv2.GaussianBlur(hsv, (5, 5), 0)
+    # if show_images:
+    #     show_image(blurred)
+
     # Threshold the HSV image to get only colors within the range
     mask = cv2.inRange(hsv, lower, upper)
     print('Got mask')
     if show_images:
         show_image(mask)
 
+    mask = cv2.GaussianBlur(mask, (5, 5), 0)
+    if show_images:
+        show_image(mask)
+
+
+    # Dilate the image to make the blue spots bigger
+    kernel = cv2.getStructuringElement((cv2.MORPH_DILATE), (4, 4))
+    mask = cv2.dilate(mask, kernel, iterations=5)
+    if show_images:
+        show_image(mask)
+
     cnt_im_array, cnts, heirarchy = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Filter out small contours around noise
+    cnts = [c for c in cnts if len(c) > contour_len_threshold]
 
     print "I found %d %s shapes" % (len(cnts), 'blue')
     # loop over the contours and filter out ones that are too small
     for c in cnts:
-        print 'len contour = ', len(c)
-        # Filter out small contours around noise
-        if len(c) < 4:
-            continue
-        # draw the contour and show it
-        cv2.drawContours(mask, [c], -1, (230, 255, 0), 2)
+        # # draw the contour and show it
+        # cv2.drawContours(mask, [c], -1, (230, 255, 0), 2)
 
         # compute the center of the contour
         M = cv2.moments(c)
@@ -76,14 +122,54 @@ def get_square_centers_from_board(image_path, num_squares, show_images=False):
         cv2.circle(mask, (cX, cY), 7, (255, 255, 255), -1)
         cv2.putText(mask, "center", (cX - 20, cY - 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-    print('got center at ', cX, cY)
-    show_image(mask)
+    if show_images:
+        show_image(mask)
+
+
+
+    # print('got centers = ', centers)
+    # center_dict = dedupe_centers(centers, height, num_squares)
+    # print('got center dict = ', center_dict)
+    # center_dict = insert_centers(center_dict, height, num_squares)
+    # print('now center dict = ', center_dict)
+
+
+    # for x, col in center_dict.items():
+    #     for y in col:
+    #         cv2.circle(mask, (x, y), 7, (255, 255, 255), -1)
+    #         cv2.putText(mask, "center", (x - 20, y - 20),
+    #                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+    #     print('got center at ', cX, cY)
+    #     if show_images:
+    #         show_image(mask)
 
     print('Centers =', centers)
+    return centers
 
 
-def dedupe_centers(centers, height, num_squares):
+# def dedupe_centers(centers, height, num_squares):
+#     distance_threshold = 10.0  # euclidian pixel distance to dedupe
+#
+#     to_dedupe = defaultdict(list)
+#     # Note - this is quadratic right now - there's certainly a way to
+#     # optimize this, but I am just brute forcing it for POC
+#     #
+#     for center in centers:
+#         for neighbor in centers:
+#             if ((neighbor[0] - center[0]) ** 2 + (
+#                 neighbor[1] - center[1]) ** 2) ** 0.5 < distance_threshold:
+#                 to_dedupe[center].append(neighbor)
+#     for dupe in to_dedupe:
+#
+
+
+
+
+def dedupe_centers_retired(centers, height, num_squares):
     """
+    This is actually the wrong way to do it - it tries to combine everything
+    into an axis aligned grid - but that's exactly why we're NOT doing it this
+    way - we want to have exact placements for the centers.
 
     :param centers:
     :return: Dictionary of x vals to column of y values
@@ -97,179 +183,70 @@ def dedupe_centers(centers, height, num_squares):
     sorted_keys = c_dict.keys()[:]
     sorted_keys.sort()
     # combine by x
-    print('Starting with x_vals', sorted_keys)
     deduped_x = defaultdict(list)
     prev_val = sorted_keys[0]
+    print 'now combining by x', sorted_keys
     for i, val in enumerate(sorted_keys[1:]):
-        print('now examining ', val, 'vs', prev_val)
+        print '\t for i, val', i, val
         if val - prev_val > square_size - x_threshold:
-            print('they are distant enough, adding prev_val')
+            print '\t\t \033[36;1m far enough away. adding', prev_val, '\033[0m'
             deduped_x[prev_val].extend(c_dict[prev_val])
             prev_val = val
         else:
+            print '\t\t \033[31;1m NOT far enough away. combining val', val, 'with prev_val', prev_val, '\033[0m'
             prev_val_col = c_dict[prev_val]  # store column to combine
             prev_val = prev_val + (val - prev_val) / 2
-            print('they are too close, combining to', prev_val)
             # Store the combined lists of the previous y columns
             c_dict[prev_val] = c_dict[val] + prev_val_col
     # TODO figure out how to dedupe the last one...
+    print('adding last prev_val', prev_val)
     deduped_x[prev_val] = c_dict[prev_val]
     res_x = deduped_x.keys()
     res_x.sort()
-    print('Got deduped x_vals', [(r, c_dict[r]) for r in res_x])
+    print('res_x = ', res_x)
 
     res = {}
     # Do the same for each y column
     for x, col in deduped_x.items():
         sorted_col = col[:]
         sorted_col.sort()
-        print('now deduping', sorted_col)
         deduped_y = []
         prev_val = sorted_col[0]
         for i, val in enumerate(sorted_col[1:]):
-            if val - prev_val > square_size - x_threshold:
+            if val - prev_val > square_size - y_threshold:
                 deduped_y.append(prev_val)
                 prev_val = val
             else:
                 prev_val = prev_val + (val - prev_val) / 2
         # TODO figure out how to dedupe the last one
         deduped_y.append(prev_val)
-        print('got deduped column', deduped_y)
         res[x] = deduped_y
-    print('got res', res)
     return res
 
-    #
-    # sorted_distances = distances.keys()[:]
-    # sorted_distances.sort()
-    # for index, distance in enumerate(sorted_distances):
-    #     if distance < square_size - x_threshold:
-    #         # Get indices to delete them
-    #         lower = sorted_keys[distances[distance]]
-    #         upper = sorted_keys[distances[distance] + 1]
-    #         x_mid = (upper + lower) / 2.0  # Should also be distance/2
-    #         # Concatenate the two lists
-    #         c_dict[x_mid] = c_dict[lower][:] + c_dict[upper][:]
-    #         del c_dict[lower]
-    #         del c_dict[upper]
-    # x_vals = c_dict.keys()
-    # x_vals.sort()
-    # print('Got x combined to ', x_vals)
-    #
-    # for x_val, column in c_dict.items():
-    #     print('Starting with ', column)
-    #     # combine by y
-    #     sorted_col = column[:]
-    #     sorted_col.sort()
-    #     deduped_col = []
-    #     for i, val in enumerate(sorted_col[1:]):
-    #         distance = val - sorted_col[i-1]
-    #         if distance < square_size - y_threshold:
-    #             y_mid = distance/2.0
-    #             deduped_col.append(y_mid)
-    #     c_dict[x_val] = deduped_col
-    #     print('Got y combined to', deduped_col)
-    #
-    # print('Length = ', sum([len(col) for col in c_dict.values()]))
-    # return c_dict
-    #
+def insert_centers(found_centers, height, num_squares):
+    # TODO use height in check?
+    assert len(found_centers) == num_squares, 'Missing whole columns'
+    threshold = 10
+    full_rows = {x: col for x, col in found_centers.items()
+                 if len(col) == num_squares}
+    for x, col in found_centers.items():
+        if len(col) == num_squares:
+            continue
+        if len(col) < num_squares:
+            for i, val in enumerate(col):
+                if len(col) == num_squares:  # TODO: better loop construction
+                    break
+                row_vals = [full[i] for full in full_rows.values()]
+                avg_value = sum(row_vals) / float(len(col))
+                if abs(avg_value - val) < threshold:
+                    continue
+                else:
+                    bisect.insort(col, int(avg_value))
+        assert len(col) == num_squares, 'incorrect number values for column'
+        full_rows[x] = col
+    return full_rows
 
-
-
-
-
-
-
-def get_square_centers_from_board_retired(image_path, num_squares,
-                                          show_images=False):
-    """Setup method to be used before processing board state in order
-    to determine the center of each square in the image.
-
-    :param image_path:
-    :return:
-    """
-    im_array = open_image(image_path)
-    height, width, channels = im_array.shape
-    square_size_guess = height/num_squares
-    square_centers = [[(-1, -1)]*num_squares]*num_squares
-
-    # Get a grayscale version of the image
-    # Would probably be useful to do this for R, G, and B, then use all TODO
-    imgray = cv2.cvtColor(im_array, cv2.COLOR_BGR2GRAY)
-    if show_images:
-        show_image(imgray)
-
-    # Blur the image - makes more sense if we had higher contrast btwn shapes
-    # blurred = cv2.GaussianBlur(imgray, (5, 5), 0)
-    # show_image(blurred)
-
-    # Threshold the image (turn it white and black around a threshold value)
-    threshold_value = 200  # could iteratively reduce TODO
-    max_clamp = 255  # set value above threshold to this
-    min_clamp = 0  # set value below threshold to this
-    ret, thresh = cv2.threshold(imgray, threshold_value, max_clamp, min_clamp)
-
-    # Get contours from the image
-    cnt_im_array, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,
-                                                  cv2.CHAIN_APPROX_SIMPLE)
-    if show_images:
-        show_image(cnt_im_array)
-
-    cv2.imwrite('/tmp/contours.png', cnt_im_array)
-
-    for i, col in enumerate(cnt_im_array):
-        white_pixels = [(i, h) for h in np.where(col > 0)]
-
-
-    # # Get edges from the image
-    # edges = cv2.Canny(cnt_im_array, 100, 200)
-    # show_image(edges)
-
-    # contours is a list of all the contours in the image, each an np array
-    # of x coordinates of boundary points
-    # print('got len contours = ', len(contours))  # 213 contours
-
-
-    # for cnt in contours:
-    #     img = cv2.drawContours(im_array, [cnt], 0, (0, 255, 0), 3)
-    #     show_image(img)
-
-    # cv2.destroyAllWindows()
-
-def is_white(im_array, x, y):
-    """
-
-    :param im_array: array of arrays: length of outer array = width of image,
-                     length of inner array = height of image
-                     value = 0 or 255 (thresholded)
-    :param x:
-    :param y:
-    :return:
-    """
-    print('checking im_array', x, y, im_array[x][y])
-    return im_array[x][y] == 255
 
 def show_image(im_array):
     cv2.imshow('image', im_array)
     cv2.waitKey(0)
-
-
-
-
-
-
-
-def test():
-    # TODO: remove the below images
-    #image = 'src/camera/captured_images/testimage.png'
-    #image = 'src/camera/captured_images/black_squares.png'
-
-    image = 'src/camera/captured_images/blue_squares.png'
-    get_square_centers_from_board(image, 8)
-
-
-
-if __name__ == '__main__':
-    test()
-
-
