@@ -9,11 +9,20 @@ class BasePiece:
   def in_bounds(self, i, j):
     return i >= 0 and j >= 0 and i < 8 and j < 8
 
+  def empty(self, i, j, state):
+    return not state[i][j].piece
+
+  # True if space is empty or enemy
   def available(self, i, j, state):
     return not state[i][j].piece or state[i][j].piece.color != self.color
 
+  # True if space occupied by enemy
   def enemy_occupied(self, i, j, state):
     return state[i][j].piece and state[i][j].piece.color != self.color
+
+  # True if space occupied by friend
+  def friend_occupied(self, i, j, state):
+    return state[i][j].piece and state[i][j].piece.color == self.color
 
   def threatened_spaces(self, current_loc, state):
     return set()
@@ -43,7 +52,42 @@ class Queen(BasePiece):
     self.job = 'queen'
 
   def threatened_spaces(self, current_loc, state):
-    return set()  
+    spaces = set()
+    row, col = current_loc
+    # She's like a Rook
+    for i in range(row + 1, 8):
+      if self.available(i, col, state):
+        spaces.add((i, col))
+      if not self.empty(i, col, state):
+        break
+    for j in range(col + 1, 8):
+      if self.available(row, j, state):
+        spaces.add((row, j))
+      if not self.empty(row, j, state):
+        break
+    for i in range(row - 1, -1, -1): 
+      if self.available(i, col, state):
+        spaces.add((i, col))
+      if not self.empty(i, col, state):
+        break
+    for j in range(col - 1, -1, -1): 
+      if self.available(row, j, state):
+        spaces.add((row, j))
+      if not self.empty(row, j, state):
+        break
+    # AND THEN ALSO like a Bishop
+    for row_offset, col_offset in ((1,1), (1,-1), (-1, 1), (-1, -1)):
+      i = row + row_offset
+      j = col + col_offset
+      while self.in_bounds(i, j):
+        if self.available(i, j, state):
+          print "adding to spaces: " + str(i)+ str(j)
+          spaces.add((i, j))
+        if not self.empty(i, j, state):
+          break
+        i += row_offset
+        j += col_offset
+    return spaces
   
 
 class Knight(BasePiece):
@@ -69,29 +113,56 @@ class Bishop(BasePiece):
     BasePiece.__init__(self, color)
     self.job = 'bishop'
 
+  def threatened_spaces(self, current_loc, state):
+    spaces = set()
+    row, col = current_loc
+    for row_offset, col_offset in ((1,1), (1,-1), (-1, 1), (-1, -1)):
+      i = row + row_offset
+      j = col + col_offset
+      while self.in_bounds(i, j):
+        if self.available(i, j, state):
+          print "adding to spaces: " + str(i)+ str(j)
+          spaces.add((i, j))
+        if not self.empty(i, j, state):
+          break
+        i += row_offset
+        j += col_offset
+    return spaces
 
 class Rook(BasePiece):
   def __init__(self, color):
     BasePiece.__init__(self, color)
     self.job = 'rook'
 
+  def threatened_spaces(self, current_loc, state):
+    spaces = set()
+    row, col = current_loc
+    for i in range(row + 1, 8):
+      if self.available(i, col, state):
+        spaces.add((i, col))
+      if not self.empty(i, col, state):
+        break
+    for j in range(col + 1, 8):
+      if self.available(row, j, state):
+        spaces.add((row, j))
+      if not self.empty(row, j, state):
+        break
+    for i in range(row - 1, -1, -1): 
+      if self.available(i, col, state):
+        spaces.add((i, col))
+      if not self.empty(i, col, state):
+        break
+    for j in range(col - 1, -1, -1): 
+      if self.available(row, j, state):
+        spaces.add((row, j))
+      if not self.empty(row, j, state):
+        break
+    return spaces
 
 class Pawn(BasePiece):
   def __init__(self, color):
     BasePiece.__init__(self, color)
     self.job = 'pawn'
-
-  def is_legal(self, move, state):
-    # A pawn moves forward only, captures diagonally and moves 1 at a time except for the first move.
-    row = move.from_loc[0]
-    col = move.from_loc[1]
-    moving_piece = state[move.from_loc[0]][move.from_loc[1]].piece
-    displaced_piece = state[move.to_loc[0]][move.to_loc[1]].piece
-    row_offset = 1 if moving_piece.color == 'white' else -1
-    if displaced_piece:
-      print "MURDER"
-      # Pawns capture diagonally
-    return move.to_loc[1] == col and (move.to_loc[0] == row + row_offset)
 
   def threatened_spaces(self, current_loc, state):
     spaces = set()
@@ -109,15 +180,7 @@ class Pawn(BasePiece):
         spaces.add((row + row_offset, col + col_offset))
     return spaces
       
-    
      
-
-    for i in range(row - 1, row + 2):
-      for j in range(col - 1, col + 2):
-        if self.in_bounds(i, j) and (i != row or j != col) and self.available(i, j, state):
-          spaces.add((i,j))
-    return spaces
-
 class Move:
   from_loc = None
   to_loc = None  

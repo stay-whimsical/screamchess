@@ -57,5 +57,24 @@ class TestMoves(unittest.TestCase):
     pawn = b.state[6][2].piece
     self.assertEqual({(4, 2), (5, 2), (5, 1)}, pawn.threatened_spaces((6, 2), b.state))
 
+  def test_rook(self):
+    b = Board()
+    rook = b.state[0][0].piece
+    self.assertEqual(set(), rook.threatened_spaces((0, 0), b.state))
+    b.state[5][0].piece = b.state[7][0].piece
+    b.state[7][0].piece = None
+    rook = b.state[5][0].piece
+    self.assertEqual({(5, 4), (5, 5), (2, 0), (5, 6), (5, 7), (3, 0), (5, 1), (1, 0), (4, 0), (5, 2), (5, 3)}, rook.threatened_spaces((5, 0), b.state))
+
+  def test_bishop(self):
+    b = Board()
+    bishop = b.state[0][2].piece
+    self.assertEqual(set(), bishop.threatened_spaces((0, 2), b.state))
+    b.state[3][2].piece =  b.state[0][2].piece
+    bishop = b.state[3][2].piece
+    self.assertEqual(set({(5, 4), (4, 3), (2, 1), (2, 3), (5, 0), (4, 1), (6, 5)}), bishop.threatened_spaces((3, 2), b.state))
+
+ 
+
 if __name__ == '__main__':
   unittest.main()
