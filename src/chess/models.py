@@ -6,44 +6,62 @@ class BasePiece:
   def __str__(self):
     return self.color + "_" + self.job
 
-  def get_moves(self):
-    pass
+  def in_bounds(self, i, j):
+    return i >= 0 and j >= 0 and i < 8 and j < 8
+
+  def available(self, i, j, state):
+    return not state[i][j].piece or state[i][j].piece.color != self.color
+
+  def enemy_occupied(self, i, j, state):
+    return state[i][j].piece and state[i][j].piece.color != self.color
+
+  def threatened_spaces(self, current_loc, state):
+    return set()
 
   def is_legal(self, move, state):
-    pass
+    return move.to_loc in self.threatened_spaces(move.from_loc, state)
+
 
 class King(BasePiece):
   def __init__(self, color):
     BasePiece.__init__(self, color)
     self.job = 'king'
 
-  def is_legal(self, move, state):
-    # A king move is legal if it has moved at most one space in any direction (and has moved)
-    # The king's moves are legal regardless of other pieces' locations.
-    row_diff = abs(move.from_loc[0] - move.to_loc[0])
-    col_diff = abs(move.from_loc[1] - move.to_loc[1])
-    return col_diff < 2 and row_diff < 2 and (row_diff + col_diff) > 0
+  def threatened_spaces(self, current_loc, state):
+    spaces = set()
+    row, col = current_loc
+    for i in range(row - 1, row + 2):
+      for j in range(col - 1, col + 2):
+        if self.in_bounds(i, j) and (i != row or j != col) and self.available(i, j, state):
+          spaces.add((i,j))
+    return spaces
+
 
 class Queen(BasePiece):
   def __init__(self, color):
     BasePiece.__init__(self, color)
     self.job = 'queen'
 
-  def is_legal(self, move, state):
-    return True
-
+  def threatened_spaces(self, current_loc, state):
+    return set()  
   
+
 class Knight(BasePiece):
   def __init__(self, color):
     BasePiece.__init__(self, color)
     self.job = 'knight'
 
-  def is_legal(self, move, state):
-    # A knight moves 1 step in one direction and 2 in another.
-    # The knight's moves are legal regardless of other pieces' locations.
-    row_diff = abs(move.from_loc[0] - move.to_loc[0])
-    col_diff = abs(move.from_loc[1] - move.to_loc[1])
-    return (col_diff == 1 and row_diff == 2)  or (row_diff == 1 and col_diff == 2)   
+  def threatened_spaces(self, current_loc, state):
+    spaces = set()
+    row, col = current_loc
+    for offset_i, offset_j in ((1, 2), (2, 1)):
+      for mult_i, mult_j in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+        i = row + offset_i * mult_i
+        j = col + offset_j * mult_j
+        print "row " + str(i) + " col " + str(j)
+        if self.in_bounds(i, j) and self.available(i, j, state):
+          spaces.add((i, j)) 
+    return spaces  
 
 
 class Bishop(BasePiece):
@@ -51,17 +69,11 @@ class Bishop(BasePiece):
     BasePiece.__init__(self, color)
     self.job = 'bishop'
 
-  def is_legal(self, move, state):
-    return True
-
 
 class Rook(BasePiece):
   def __init__(self, color):
     BasePiece.__init__(self, color)
     self.job = 'rook'
-
-  def is_legal(self, move, state):
-    return True
 
 
 class Pawn(BasePiece):
@@ -79,8 +91,32 @@ class Pawn(BasePiece):
     if displaced_piece:
       print "MURDER"
       # Pawns capture diagonally
-      return (move.to_loc[0] == row + row_offset) and abs(move.to_loc[1] - col) == 1
-    return move.to_loc[0] == row + row_offset and move.to_loc[1] == col
+    return move.to_loc[1] == col and (move.to_loc[0] == row + row_offset)
+
+  def threatened_spaces(self, current_loc, state):
+    spaces = set()
+    row, col = current_loc
+    row_offset = 1 if self.color == 'white' else -1  
+    # normal forward movement, no piece capture
+    if self.in_bounds(row + row_offset, col) and not state[row + row_offset][col].piece:
+      spaces.add((row + row_offset, col))
+    # if pawn in starting location, en passant is possible
+    if (row == 1 and self.color == 'white') or (row == 6 and self.color == 'black'):
+      if self.in_bounds(row + 2 * row_offset, col) and not state[row + 2 * row_offset][col].piece:
+        spaces.add((row + 2 * row_offset, col))
+    for col_offset in [-1, 1]:
+      if self.in_bounds(row + row_offset, col + col_offset) and self.enemy_occupied(row + row_offset, col + col_offset, state):
+        spaces.add((row + row_offset, col + col_offset))
+    return spaces
+      
+    
+     
+
+    for i in range(row - 1, row + 2):
+      for j in range(col - 1, col + 2):
+        if self.in_bounds(i, j) and (i != row or j != col) and self.available(i, j, state):
+          spaces.add((i,j))
+    return spaces
 
 class Move:
   from_loc = None
@@ -102,9 +138,10 @@ class Space:
  
   def __str__(self):
     output = str(self.piece) if self.piece else '_'
-    output += 'whitethreat' if str(self.danger_from_white) else ''
-    output += 'blackthreat' if str(self.danger_from_black) else ''
+    output += 'whitethreat' if self.danger_from_white else ''
+    output += 'blackthreat' if self.danger_from_black else ''
     return output 
+
 
 class Board:
   def __init__(self):
@@ -144,11 +181,12 @@ class Board:
   def update_turn(self):
     self.turn = 'white' if self.turn == 'black' else 'black'
 
-  def exec_move(self, move):
+  def exec_move(self, move, force=False):
     moving_piece = self.state[move.from_loc[0]][move.from_loc[1]].piece
-    assert moving_piece
-    assert moving_piece.color == self.turn
-    assert moving_piece.is_legal(move, self.state)
+    if not force:
+      assert moving_piece
+      assert moving_piece.color == self.turn
+      assert moving_piece.is_legal(move, self.state)
     displaced_piece = self.state[move.to_loc[0]][move.to_loc[1]].piece
     self.state[move.to_loc[0]][move.to_loc[1]].piece = moving_piece
     self.state[move.from_loc[0]][move.from_loc[1]].piece = None
