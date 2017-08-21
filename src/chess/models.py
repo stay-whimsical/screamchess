@@ -237,21 +237,21 @@ class Board:
       output += '\n'
     return output
 
-  def reset_danger_from(self.color):
+  def reset_danger_from(self, color):
     threatened_spaces = set()
     for i in range(0, 8):
       row = self.state[i]
       for j in range(0, 8):
         space = row[j]
-        if self.color == 'white':
+        if color == 'white':
           space.danger_from_white = False
         else:
           space.danger_from_black = False
-        if space.piece and space.piece.color == self.color:
+        if space.piece and space.piece.color == color:
           for each in space.piece.threatened_spaces((i, j), self.state):
             threatened_spaces.add(each) 
     for x, y in threatened_spaces:
-      if self.color == 'white':
+      if color == 'white':
         self.state[x][y].danger_from_white = True
       else:
         self.state[x][y].danger_from_black = True
