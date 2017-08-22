@@ -81,7 +81,6 @@ class Queen(BasePiece):
       j = col + col_offset
       while self.in_bounds(i, j):
         if self.available(i, j, state):
-          print "adding to spaces: " + str(i)+ str(j)
           spaces.add((i, j))
         if not self.empty(i, j, state):
           break
@@ -102,7 +101,6 @@ class Knight(BasePiece):
       for mult_i, mult_j in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
         i = row + offset_i * mult_i
         j = col + offset_j * mult_j
-        print "row " + str(i) + " col " + str(j)
         if self.in_bounds(i, j) and self.available(i, j, state):
           spaces.add((i, j)) 
     return spaces  
@@ -121,7 +119,6 @@ class Bishop(BasePiece):
       j = col + col_offset
       while self.in_bounds(i, j):
         if self.available(i, j, state):
-          print "adding to spaces: " + str(i)+ str(j)
           spaces.add((i, j))
         if not self.empty(i, j, state):
           break
@@ -168,15 +165,8 @@ class Pawn(BasePiece):
     spaces = set()
     row, col = current_loc
     row_offset = 1 if self.color == 'white' else -1  
-    # normal forward movement, no piece capture
-    if self.in_bounds(row + row_offset, col) and not state[row + row_offset][col].piece:
-      spaces.add((row + row_offset, col))
-    # if pawn in starting location, en passant is possible
-    if (row == 1 and self.color == 'white') or (row == 6 and self.color == 'black'):
-      if self.in_bounds(row + 2 * row_offset, col) and not state[row + 2 * row_offset][col].piece:
-        spaces.add((row + 2 * row_offset, col))
     for col_offset in [-1, 1]:
-      if self.in_bounds(row + row_offset, col + col_offset) and self.enemy_occupied(row + row_offset, col + col_offset, state):
+      if self.in_bounds(row + row_offset, col + col_offset):
         spaces.add((row + row_offset, col + col_offset))
     return spaces
       
@@ -201,8 +191,8 @@ class Space:
  
   def __str__(self):
     output = str(self.piece) if self.piece else '_'
-    output += 'whitethreat' if self.danger_from_white else ''
-    output += 'blackthreat' if self.danger_from_black else ''
+    output += '<w>' if self.danger_from_white else ''
+    output += '<b>' if self.danger_from_black else ''
     return output 
 
 
@@ -233,7 +223,7 @@ class Board:
     output = ''
     for row in self.state:
       for space in row:
-        output += (str(space.piece) if space.piece else '_') + ' '
+        output += str(space) + ' '
       output += '\n'
     return output
 
