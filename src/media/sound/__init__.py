@@ -59,12 +59,12 @@ PIECE_MAP = {
     'white_pawn': 'whitePawn6',
     'white_pawn': 'whitePawn7',
     'white_pawn': 'whitePawn8',
-    'white_pawn': 'whiteRook1',
-    'white_pawn': 'whiteRook2',
-    'white_knight': 'whiteKnight1',
+    'white_rook': 'whiteRook2',
+    'white_rook': 'whiteRook1',
     'white_knight': 'whiteKnight2',
-    'white_bishop': 'whiteBishop1',
+    'white_knight': 'whiteKnight1',
     'white_bishop': 'whiteBishop2',
+    'white_bishop': 'whiteBishop1',
     'white_queen': 'whiteQueen',
     'white_king': 'whiteKing',
     'black_pawn': 'blackPawn1',
@@ -75,12 +75,12 @@ PIECE_MAP = {
     'black_pawn': 'blackPawn6',
     'black_pawn': 'blackPawn7',
     'black_pawn': 'blackPawn8',
-    'black_pawn': 'blackRook1',
-    'black_pawn': 'blackRook2',
-    'black_knight': 'blackKnight1',
+    'black_rook': 'blackRook2',
+    'black_rook': 'blackRook1',
     'black_knight': 'blackKnight2',
-    'black_bishop': 'blackBishop1',
+    'black_knight': 'blackKnight1',
     'black_bishop': 'blackBishop2',
+    'black_bishop': 'blackBishop1',
     'black_queen': 'blackQueen',
     'black_king': 'blackKing'
 }
@@ -128,6 +128,12 @@ def play_sound(piece, action):
     """
     path = _sound_for_piece(piece, action)
     _play_sound_async(path)
+
+
+def random_action():
+    actions = [Actions.Kill, Actions.MoveSafety, Actions.MoveDanger, Actions.Die, Actions.Lift]
+    action_index = random.randint(0, len(actions) - 1)
+    return actions[action_index]
 
 
 def _sound_for_piece(piece, action):
