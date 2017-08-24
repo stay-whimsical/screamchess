@@ -46,6 +46,9 @@ class BoardProcessor:
                            # also WK with dot
                            }
 
+    def set_color_map(self, color_map):
+        self._color_map = color_map
+
     @staticmethod
     def _open_image(image_path):
         return cv2.imread(image_path)
