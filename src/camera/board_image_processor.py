@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import bisect
 import operator
-from src.camera.setup_board import get_square_centers_from_board
+from camera.setup_board import get_square_centers_from_board
 
 # TODO: refactor to put all code and magic numbers in here, but for now
 #       just importing the other working modules
@@ -24,7 +24,7 @@ class BoardProcessor:
         self._num_squares = 8  # Width of board, standard chess board
         self._contour_len_threshold = 10  # Perimeter of shape in pixels
         self._centers = []
-        self._cur_state = None
+        self._cur_state = [ [None for x in xrange(self._num_squares)] for x in xrange(self._num_squares) ]
         self._debug_images = debug_image_mode
         self._color_map = {'WB': (np.array([110, 50, 50]),  # light blue
                                   np.array([130, 255, 255])),
@@ -55,6 +55,14 @@ class BoardProcessor:
             cv2.imshow(title, im_array)
             cv2.waitKey(0)
 
+    def update_state(self, image):
+        state = self.get_board_state(image)
+        if state != self._cur_state:
+            self._cur_state = state
+
+    def get_cur_state(self):
+        return self._cur_state
+
     def setup_board(self, image_path):
         """Get the center of each square from a given board image,
         corresponding to it's i-j position in a 2d array (representing
@@ -62,6 +70,14 @@ class BoardProcessor:
         """
         self._centers = self._sort_centers(
             get_square_centers_from_board(image_path, self._num_squares))
+
+    def _setup_default_board(self):
+        """For the case when we don't have time to put all the little
+        squares.
+        
+        I apologize for the formatting but I am a monster."""
+        self._centers={(387, 440): (7, 6), (190, 192): (3, 3), (82, 384): (6, 1), (210, 445): (7, 3), (21, 383): (6, 0), (327, 444): (7, 5), (20, 135): (2, 0), (71, 256): (4, 1), (477, 130): (2, 7), (452, 437): (7, 7), (196, 258): (4, 3), (460, 316): (5, 7), (20, 78): (1, 0), (74, 319): (5, 1), (397, 65): (1, 6), (69, 138): (2, 1), (73, 79): (1, 1), (331, 8): (0, 5),(455, 379): (6, 7), (25, 19): (0, 0), (326, 126): (2, 5),(198, 67): (1, 3), (129, 133): (2, 2), (139, 321): (5, 2),(194, 128): (2, 3), (269, 320): (5, 4), (265, 7): (0, 4),(132, 10): (0, 2), (454, 9): (0, 7), (340, 184): (3, 5),(203, 386): (6, 3), (395, 9): (0, 6), (273, 445): (7, 4),(200, 9): (0, 3), (263, 62): (1, 4), (332, 320): (5, 5),(458, 65): (1, 7), (140, 388): (6, 2), (145, 442): (7, 2),(131, 71): (1, 2), (394, 253): (4, 6), (338, 389): (6, 5),(17, 260): (4, 0), (330, 255): (4, 5), (269, 385): (6, 4),(136, 259): (4, 2), (32, 437): (7, 0), (16, 202): (3, 0),(398, 190): (3, 6), (76, 13): (0, 1), (21, 321): (5, 0),(262, 129): (2, 4), (69, 199): (3, 1), (395, 387): (6, 6),(390, 126): (2, 6), (399, 317): (5, 6), (264, 190): (3, 4),(262, 258): (4, 4), (130, 194): (3, 2), (460, 253): (4, 7),(458, 188): (3, 7), (89, 439): (7, 1), (198, 321): (5, 3),(330, 66): (1, 5)}
+
 
     def _sort_centers(self, centers):
         """Sort the centers into a 2D array.
@@ -106,16 +122,18 @@ class BoardProcessor:
         assert len(dists) > 0, ('Got no dists from ', str(shape_center),
                                 str(self._centers))
         if dists[0][0] < half_square_threshold:
-            print('dists [0] = ', dists[0], '< ', half_square_threshold)
+            if self._debug_images:
+                print('dists [0] = ', dists[0], '< ', half_square_threshold)
             return self._centers[dists[0][1]]
 
-    def get_board_state(self, image_path):
+    def get_board_state(self, image):
         """Return the state of the board (in terms of pieces in each
         square) from the given board image.
 
         Centers are np.arrays, which have point-like behavior for subtraction.
         """
-        image = self._open_image(image_path)
+        if not self._centers:
+            self._setup_default_board()
         height, width, channels = image.shape
         half_square_threshold = height / (self._num_squares * 2)
         # Fun python fact - the code commented below makes copies of each list
@@ -130,10 +148,12 @@ class BoardProcessor:
                 self._show_image(filtered_image, 'convolved')
             # I love O(n**2). As sweet as microwaved bananas.
             for shape_center in self._get_centers(filtered_image):
-                print('Now for shape center', shape_center)
+                if self._debug_images:
+                    print('Now for shape center', shape_center)
                 coords = self._point_within_square(shape_center,
                                                    half_square_threshold)
-                print('coordinate = ', coords)
+                if self._debug_images:
+                    print('coordinate = ', coords)
                 if coords is not None:
                     board[coords[0]][coords[1]] = piece
         return board
@@ -173,7 +193,7 @@ class BoardProcessor:
     def _get_centers(self, image):
         """Image needs to be a masked image, easily contourizable."""
         centers = []
-        cnt_im_array, contours, heirarchy = cv2.findContours(
+        contours, heirarchy = cv2.findContours(
             image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # Filter out small contours around noise
