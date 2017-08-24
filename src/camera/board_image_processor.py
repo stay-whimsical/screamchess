@@ -118,9 +118,9 @@ class BoardProcessor:
         image = self._open_image(image_path)
         height, width, channels = image.shape
         half_square_threshold = height / (self._num_squares * 2)
-        # Fun python fact - the code below makes copies of each list
+        # Fun python fact - the code commented below makes copies of each list
         # board = [ [0]*self._num_squares ]*self._num_squares
-        board = [ [0 for x in xrange(self._num_squares)]
+        board = [ [None for x in xrange(self._num_squares)]
                   for x in xrange(self._num_squares)]
         # Get a convolved image for each color in our color map
         for piece, color_range in self._color_map.items():
