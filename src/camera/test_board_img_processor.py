@@ -17,10 +17,10 @@ class TestGetColors(unittest.TestCase):
 
     def test_initial_state(self):
         image_path = 'src/camera/captured_images/finalll.png'
-        self._processor._show_image(self._processor._open_image(image_path),
-                                    'Start image')
+        self._processor._show_image(self._processor._open_image(image_path),'Start image')
+        img = self._processor._open_image(image_path)
         start = time.time()
-        state = self._processor.get_board_state(image_path)
+        state = self._processor.get_board_state(img)
         end = time.time()
         print("got state")
         for row in state:
@@ -30,15 +30,15 @@ class TestGetColors(unittest.TestCase):
     @unittest.skip('This image is no longer up to snuff')
     def test_better_light(self):
         start = time.time()
-        state = pi.get_board_state('src/camera/captured_images/'
-                                   'okay_light_good_colors.png',
+        img = self._processor._open_image('src/camera/captured_images/okay_light_good_colors.png')
+        state = pi.get_board_state(img,
                                    qr=False, color=True,
                                    color_map=color_map)
         print("got state", state)
         end = time.time()
         print('Got board state from colors in ', end - start)
 
-    @unittest.skip("need to make the color_map")
+#    @unittest.skip("need to make the color_map")
     def test_three_colors(self):
         start = time.time()
         state = pi.get_board_state('src/camera/captured_images/testimage.png',

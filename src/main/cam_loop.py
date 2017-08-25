@@ -39,16 +39,32 @@ def test_color_ranges():
     board_processor.set_color_map(color_map)
     return board_processor
 
+def blend_images(num):
+    alpha = 0.5
+    beta = 1.0 - alpha
+    gamma = 0.0
+    img = one_frame()
+    for i in range(num):
+        img2 = one_frame()
+        img = cv2.addWeighted(img, alpha, img2, beta, gamma)
+    return img
+
 def main_get_color_ranges():
-    board_processor = bip.BoardProcessor(debug_image_mode=True)
+    board_processor = bip.BoardProcessor(debug_image_mode=False)
     show_all_hsv_color_ranges(10, board_processor)
 
 def main():
-    #    board_processor = bip.BoardProcessor(debug_image_mode=True)
-    board_processor = test_color_ranges()
+    board_processor = bip.BoardProcessor(debug_image_mode=True)
+	#board_processor = test_color_ranges()
+	#board_processor = bip.BoardProcessor()
     state = board_processor.get_cur_state()
     while True:
-        img = one_frame()
+        #img = one_frame()
+        img = blend_images(5)
+        tmp_im_path = '/tmp/img.jpg' 
+        cv2.imwrite(tmp_im_path, img)
+        board_processor._cache_pil_im(tmp_im_path)
+        board_processor._show_image(img, show_this_image=False)
         board_processor.update_state(img)
         ret_state = board_processor.get_cur_state()
         if ret_state != state:
@@ -56,6 +72,8 @@ def main():
             for row in ret_state:
                 print row
             state = ret_state
+        else:
+        	print 'No new state',
     # show_webcam()
 
 if __name__ == '__main__':

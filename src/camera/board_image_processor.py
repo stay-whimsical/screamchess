@@ -8,11 +8,19 @@ import cv2
 import numpy as np
 import bisect
 import operator
+from PIL import Image
 from camera.setup_board import get_square_centers_from_board
 
 # TODO: refactor to put all code and magic numbers in here, but for now
 #       just importing the other working modules
 
+# TODO put this in the class
+def open_image(image_path):
+    """Simple wrapper to load an image obj from an image file."""
+    with open(image_path, 'rb') as image_file:
+        image = Image.open(image_file)
+        image.load()
+    return image
 
 class BoardProcessor:
     """
@@ -49,12 +57,15 @@ class BoardProcessor:
     def set_color_map(self, color_map):
         self._color_map = color_map
 
-    @staticmethod
-    def _open_image(image_path):
+    def _cache_pil_im(self, image_path):
+        self._pil_im = open_image(image_path)
+
+    def _open_image(self, image_path):
+        self._cache_pil_im(image_path)
         return cv2.imread(image_path)
 
-    def _show_image(self, im_array, title='image'):
-        if self._debug_images:
+    def _show_image(self, im_array, title='image', show_this_image=False):
+        if self._debug_images or show_this_image:
             cv2.imshow(title, im_array)
             cv2.waitKey(0)
 
@@ -129,7 +140,45 @@ class BoardProcessor:
                 print('dists [0] = ', dists[0], '< ', half_square_threshold)
             return self._centers[dists[0][1]]
 
+    def _shape_in_square(self, image):
+        centers = self._get_centers(image)
+        if len(centers) > 0:
+            return True
+        return False
+
+
     def get_board_state(self, image):
+        """Breaks the image into an image per square, and looks at a radius around the center
+        of each square to see if it has a piece in it. 
+
+        Returns the board state
+        """
+        if not self._centers:
+            self._setup_default_board()
+        height, width, channels = image.shape
+        radius = height/(self._num_squares*2)
+        board = [ [None for x in xrange(self._num_squares)] for x in xrange(self._num_squares)]
+        for pixels, indices in self._centers.items():
+            
+            cropped = self._pil_im.crop((pixels[0] - radius, pixels[1] - radius, pixels[0] + radius, pixels[1] + radius))
+
+            im = np.array(cropped)
+            
+            if self._get_circle_in_square(im):
+                board[indices[0]][indices[1]] = True
+
+#            for piece, color_range in self._color_map.items():
+#                #filtered_square = self._get_convolved_image(im, color_range)
+#                if self._debug_images:
+#                    self._show_image(filtered_square, 'filtered square')
+#                if self._shape_in_square(filtered_square):
+#                    # just early out - don't check the other color options...
+#                    # may want to change this later...we'll see how noisy it is
+#                    board[indices[0]][indices[1]] = piece
+        return board
+
+
+    def get_board_state_retired(self, image):
         """Return the state of the board (in terms of pieces in each
         square) from the given board image.
 
@@ -160,6 +209,26 @@ class BoardProcessor:
                 if coords is not None:
                     board[coords[0]][coords[1]] = piece
         return board
+
+    def _get_circle_in_square(self, im):
+
+        imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+        circle = self._get_circle(imgray)
+        if circle:
+            return True
+
+    def _get_circle(self, im):
+        contours, heirarchy = cv2.findContours(
+             im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        for cnt in contours:
+            if cv2.isContourConvex(cnt):
+                self._show_image(im)
+                return True
+        return False
+
+
+
 
     def _get_convolved_image(self, image, color_range):
         """Get an image mask filtered to just the locations of a certain

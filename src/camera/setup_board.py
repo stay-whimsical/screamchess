@@ -59,7 +59,7 @@ def get_square_centers_from_board(image_path, num_squares, show_images=False):
     if show_images:
         show_image(mask)
 
-    cnt_im_array, cnts, heirarchy = cv2.findContours(
+    cnts, heirarchy = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Filter out small contours around noise
