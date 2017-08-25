@@ -7,6 +7,7 @@ initialize the location of the center of each square on the board.
 import cv2
 import numpy as np
 import bisect
+import math
 import operator
 from PIL import Image
 from camera.setup_board import get_square_centers_from_board
@@ -213,10 +214,47 @@ class BoardProcessor:
     def _get_circle_in_square(self, im):
 
         imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-        circle = self._get_circle(imgray)
-        if circle:
-            return True
+        #circle = self._get_circle(imgray)
+        self._show_image(imgray)
+#        Nighttime 
+#        ret,thresh = cv2.threshold(imgray,182,222,0)
+        ret,thresh = cv2.threshold(imgray,100,160,0)
+        thresh = cv2.bitwise_not(thresh)
+        # print 'thresh = ', thresh
+        self._show_image(thresh)
+        mask = cv2.inRange(thresh, 100, 255)
+        self._show_image(mask)
 
+        # RETR_LIST=1, CHAIN_APPROX_SIMPLE=2
+        contours, heirarchy = cv2.findContours(
+             mask, cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+        #cv2.drawContours(im, contours, -1, (0,255,0), 3)
+        circles = []
+        for cnt in contours:
+            (x,y),radius = cv2.minEnclosingCircle(cnt)
+            center = (int(x),int(y))
+            radius = int(radius)
+            area = cv2.contourArea(cnt)
+            circle_area = math.pi * radius**2
+            if circle_area < 250.0 or abs(area - circle_area) > 100.0:  # Arbitrary magic threshold
+                continue
+            if self._debug_images:
+                print("center",center)
+                print("radius",radius)
+            if radius < 5 or radius > 15:
+                continue
+            if self._debug_images:
+                print 'contour area =', area, 'circle_area = ', circle_area
+            
+            cv2.circle(im, center, radius, (0, 255, 0), 2)
+            self._show_image(im, show_this_image=False)
+            circles.append(center)
+        if len(circles) == 1:
+            return True
+        elif len(circles) > 1:
+            print '\033[31;1m SOMETHING WEIRD HERE...\033[0m', circles
+        else:
+            return False
     def _get_circle(self, im):
         contours, heirarchy = cv2.findContours(
              im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)

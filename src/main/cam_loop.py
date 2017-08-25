@@ -54,9 +54,9 @@ def main_get_color_ranges():
     show_all_hsv_color_ranges(10, board_processor)
 
 def main():
-    board_processor = bip.BoardProcessor(debug_image_mode=True)
-	#board_processor = test_color_ranges()
-	#board_processor = bip.BoardProcessor()
+    board_processor = bip.BoardProcessor(debug_image_mode=False)
+    #board_processor = test_color_ranges()
+    #board_processor = bip.BoardProcessor()
     state = board_processor.get_cur_state()
     while True:
         #img = one_frame()
@@ -68,12 +68,18 @@ def main():
         board_processor.update_state(img)
         ret_state = board_processor.get_cur_state()
         if ret_state != state:
-            print 'Got state change, new state = '
+            print '\033[34;1m Got state change, new state = \033[0m'
             for row in ret_state:
-                print row
+                m = []
+                for x in row:
+                    if x is None:
+                        m.append('-')
+                    else:
+                        m.append('P')
+                print m
             state = ret_state
         else:
-        	print 'No new state',
+            print 'No new state',
     # show_webcam()
 
 if __name__ == '__main__':
