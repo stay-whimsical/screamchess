@@ -33,8 +33,10 @@ import subprocess
 import threading
 
 from enum import Enum
+
 # from collections import namedtuple
 
+#Actions = Enum('Actions', 'Kill MoveDanger MoveSafety Die Lift Boo Castle')
 Actions = Enum('Actions', 'Kill MoveDanger MoveSafety Die Lift Boo Castle')
 
 ACTIONS_MAP = {
@@ -51,36 +53,36 @@ ACTIONS_MAP = {
 # The map of piecenames in the assets directory. Keys are just placeholders,
 # but the values are real.
 PIECE_MAP = {
-    'white_pawn': 'whitePawn1',
-    'white_pawn': 'whitePawn2',
-    'white_pawn': 'whitePawn3',
-    'white_pawn': 'whitePawn4',
-    'white_pawn': 'whitePawn5',
-    'white_pawn': 'whitePawn6',
-    'white_pawn': 'whitePawn7',
-    'white_pawn': 'whitePawn8',
-    'white_rook': 'whiteRook2',
-    'white_rook': 'whiteRook1',
-    'white_knight': 'whiteKnight2',
-    'white_knight': 'whiteKnight1',
-    'white_bishop': 'whiteBishop2',
-    'white_bishop': 'whiteBishop1',
+    'white_pawn1': 'whitePawn1',
+    'white_pawn2': 'whitePawn2',
+    'white_pawn3': 'whitePawn3',
+    'white_pawn4': 'whitePawn4',
+    'white_pawn5': 'whitePawn5',
+    'white_pawn6': 'whitePawn6',
+    'white_pawn7': 'whitePawn7',
+    'white_pawn8': 'whitePawn8',
+    'white_rook1': 'whiteRook1',
+    'white_rook2': 'whiteRook2',
+    'white_knight1': 'whiteKnight1',
+    'white_knight2': 'whiteKnight2',
+    'white_bishop1': 'whiteBishop1',
+    'white_bishop2': 'whiteBishop2',
     'white_queen': 'whiteQueen',
     'white_king': 'whiteKing',
-    'black_pawn': 'blackPawn1',
-    'black_pawn': 'blackPawn2',
-    'black_pawn': 'blackPawn3',
-    'black_pawn': 'blackPawn4',
-    'black_pawn': 'blackPawn5',
-    'black_pawn': 'blackPawn6',
-    'black_pawn': 'blackPawn7',
-    'black_pawn': 'blackPawn8',
-    'black_rook': 'blackRook2',
-    'black_rook': 'blackRook1',
-    'black_knight': 'blackKnight2',
-    'black_knight': 'blackKnight1',
-    'black_bishop': 'blackBishop2',
-    'black_bishop': 'blackBishop1',
+    'black_pawn1': 'blackPawn1',
+    'black_pawn2': 'blackPawn2',
+    'black_pawn3': 'blackPawn3',
+    'black_pawn4': 'blackPawn4',
+    'black_pawn5': 'blackPawn5',
+    'black_pawn6': 'blackPawn6',
+    'black_pawn7': 'blackPawn7',
+    'black_pawn8': 'blackPawn8',
+    'black_rook1': 'blackRook1',
+    'black_rook2': 'blackRook2',
+    'black_knight1': 'blackKnight1',
+    'black_knight2': 'blackKnight2',
+    'black_bishop1': 'blackBishop1',
+    'black_bishop2': 'blackBishop2',
     'black_queen': 'blackQueen',
     'black_king': 'blackKing'
 }
@@ -130,6 +132,15 @@ def play_sound(piece, action):
     _play_sound_async(path)
 
 
+def play_sounds(sounds):
+    """
+    Takes a list of tuples to play the sounds in succession.
+    """
+    for piece, action in sounds:
+        path = _sound_for_piece(piece, action)
+        _play_sound(path)
+
+
 def random_action():
     actions = [Actions.Kill, Actions.MoveSafety, Actions.MoveDanger, Actions.Die, Actions.Lift]
     action_index = random.randint(0, len(actions) - 1)
@@ -137,7 +148,7 @@ def random_action():
 
 
 def _sound_for_piece(piece, action):
-    piece_name = PIECE_MAP[str(piece)]
+    piece_name = PIECE_MAP[piece.hash()]
     action_name = ACTIONS_MAP[action]
     action_index_max = ASSET_BANK[piece_name][action_name]
     action_index = random.randint(0, action_index_max - 1)
@@ -155,4 +166,4 @@ def _play_sound(soundfile):
 
 
 def _asset_path(piece_dir):
-    return os.path.abspath(os.path.join('./', 'assets', piece_dir))
+	return os.path.abspath(os.path.join('./../', 'assets', piece_dir))

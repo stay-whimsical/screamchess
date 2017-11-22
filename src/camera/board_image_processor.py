@@ -216,10 +216,11 @@ class BoardProcessor:
         imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
         #circle = self._get_circle(imgray)
         self._show_image(imgray)
-#        Nighttime 
-#        ret,thresh = cv2.threshold(imgray,182,222,0)
-        ret,thresh = cv2.threshold(imgray,100,160,0)
-        thresh = cv2.bitwise_not(thresh)
+#       Night time Treshold values # TODO make this something you pass in from the command line 
+        ret,thresh = cv2.threshold(imgray,182,222,0)
+#       Day Time Treshold values and invert
+#        ret,thresh = cv2.threshold(imgray,100,160,0)
+#        thresh = cv2.bitwise_not(thresh)
         # print 'thresh = ', thresh
         self._show_image(thresh)
         mask = cv2.inRange(thresh, 100, 255)

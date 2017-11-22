@@ -1,0 +1,39 @@
+whiteRook1 (death building, Liam)
+whiteKnight1 (arnold, Liam)
+whiteBishop1 (mewling, Liam)
+whiteQueen (kid, Sara)
+whiteKing (Matt)
+whiteBishop2 (maid, Sara)
+whiteKnight2 (Fernando, Pablo)
+whiteRook2 (I am Rook, David)
+whitePawn1 (peacenik, Karen)
+-whitePawn2
+-whitePawn3
+whitePawn4 (employee, Karen)
+whitePawn5 (truther, Pablo)
+-whitePawn6
+-whitePawn7
+-whitePawn8
+
+-blackRook1
+blackKnight1 (dog, Sara)
+blackBishop1 (drag, David)
+-blackQueen
+-blackKing
+-blackBishop2
+blackKnight2 (valley girl, Karen)
+-blackRook2
+-blackPawn1
+-blackPawn2
+-blackPawn3
+blackPawn4 (nerd, Karen)
+blackPawn5 (creature, Pablo)
+-blackPawn6
+-blackPawn7
+-blackPawn8
+
+
+# Missing
+## Voices
+Sara's GoT queen
+All me

@@ -7,7 +7,10 @@ are usually implemented in other modules in the package.
 import sys
 from collections import namedtuple
 from events import Events
+from time import sleep
 import logging
+import threading
+import random
 
 import gamestate
 import camera
@@ -15,6 +18,8 @@ import media
 
 
 logging.basicConfig()
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 EVENTS = Events()
 
 
@@ -62,6 +67,40 @@ def print_state(state, events):
     return state
 
 
+MIN_EVERLOOP_SECONDS = 10
+MAX_EVERLOOP_SECONDS = 45
+
+
+def everloop(state, events):
+    """
+    A function that we're adding out of SHEER DESPERATION AND DOWNSCOPEYNESS!
+    This takes the MIN and MAX number of seconds defined above and play a random
+    sound on them, forever!
+    """
+    t = threading.Thread(target=_loop_and_play_randoms, args=())
+    log.debug('STARTING EVERLOOP')
+    t.start()
+    return state
+
+
+def stop_everloop(state, events):
+    global shouldLoop
+    shouldLoop = False
+    return state
+
+
+def _loop_and_play_randoms():
+    global shouldLoop
+    global MIN_EVERLOOP_SECONDS
+    global MAX_EVERLOOP_SECONDS
+    shouldLoop = True
+    while shouldLoop:
+        num_seconds = random.randint(MIN_EVERLOOP_SECONDS, MAX_EVERLOOP_SECONDS)
+        log.debug('{} seconds until the next sound!'.format(num_seconds))
+        sleep(num_seconds)
+        media.test_sound(None, None)
+
+
 Instruction = namedtuple('Instruction', 'keystroke name description function')
 
 
@@ -96,6 +135,21 @@ INSTRUCTIONS = [
         name='Test sound',
         description='Play a sound for me!',
         function=media.test_sound),
+    Instruction(
+        keystroke='T',
+        name='Test sound sequence',
+        description='Play sounds, multiple!',
+        function=media.test_sound_sequence),
+    Instruction(
+        keystroke='L',
+        name='EVERLOOP',
+        description='Play sounds within a random interval, forever!',
+        function=everloop),
+    Instruction(
+        keystroke='l',
+        name='stop EVERLOOP',
+        description='Make the everlooping stop!',
+        function=stop_everloop),
     Instruction(
         keystroke='q',
         name='Quit',
