@@ -3,7 +3,7 @@ Code used to play various sounds, blink LEDs, and manage the media generally.
 """
 import random
 
-import sound
+from media import sound
 from chess.models import King, Rook, Bishop, Knight, Queen, Pawn
 
 

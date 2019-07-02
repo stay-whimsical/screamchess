@@ -277,5 +277,5 @@ class Board:
         self.state[move.to_loc[0]][move.to_loc[1]].piece = moving_piece
         self.state[move.from_loc[0]][move.from_loc[1]].piece = None
         if displaced_piece:
-            print "MURDERED " + str(displaced_piece)
+            print("MURDERED " + str(displaced_piece))
         self.update_turn()

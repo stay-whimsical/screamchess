@@ -112,12 +112,12 @@ def create_sound_bank():
     Someday, I'd like to put a text file in the sound directories to have metadata
     like the names of the actors so we can print credits or something.
     """
-    for piece_name in PIECE_MAP.itervalues():
+    for piece_name in PIECE_MAP.values():
         path = _asset_path(piece_name)
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
-        action_counts = {key: 0 for key in ACTIONS_MAP.itervalues()}
+        action_counts = {key: 0 for key in ACTIONS_MAP.values()}
         for f in files:
-            for action in ACTIONS_MAP.itervalues():
+            for action in ACTIONS_MAP.values():
                 if re.match(action, f):
                     curr = action_counts[action]
                     action_counts[action] = curr + 1
