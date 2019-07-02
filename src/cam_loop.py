@@ -12,11 +12,14 @@ def show_webcam(mirror=False):
         cv2.imshow('webcam', img)
         if cv2.waitKey(1) == 27:
             break
-            
-          
- 
+
+
+
 def one_frame(id=0):
+    # FIXME: Store the cam
    cam = cv2.VideoCapture(id)
+   cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+   cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
    ret_val, img = cam.read()
    #print("width: " + str(cam.get(3)))
    #print("height: " + str(cam.get(4)))
