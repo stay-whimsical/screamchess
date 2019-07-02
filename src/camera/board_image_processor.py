@@ -150,7 +150,7 @@ class BoardProcessor:
 
     def get_board_state(self, image):
         """Breaks the image into an image per square, and looks at a radius around the center
-        of each square to see if it has a piece in it. 
+        of each square to see if it has a piece in it.
 
         Returns the board state
         """
@@ -158,13 +158,10 @@ class BoardProcessor:
             self._setup_default_board()
         height, width, channels = image.shape
         radius = height/(self._num_squares*2)
-        board = [ [None for x in xrange(self._num_squares)] for x in xrange(self._num_squares)]
+        board = [ [None for x in range(self._num_squares)] for x in range(self._num_squares)]
         for pixels, indices in self._centers.items():
-            
             cropped = self._pil_im.crop((pixels[0] - radius, pixels[1] - radius, pixels[0] + radius, pixels[1] + radius))
-
             im = np.array(cropped)
-            
             if self._get_circle_in_square(im):
                 board[indices[0]][indices[1]] = True
 
@@ -229,12 +226,6 @@ class BoardProcessor:
         # RETR_LIST=1, CHAIN_APPROX_SIMPLE=2
         contours, heirarchy, question = cv2.findContours(
              mask, cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
-
-        # FIXME: What is question?
-        if question is None:
-            return False
-        else:
-            print("Got question = ", question)
 
         #cv2.drawContours(im, contours, -1, (0,255,0), 3)
         circles = []
