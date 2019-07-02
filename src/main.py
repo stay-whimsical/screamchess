@@ -88,6 +88,13 @@ def stop_everloop(state, events):
     shouldLoop = False
     return state
 
+def test_image(state, events):
+    import cam_loop
+    from camera import board_image_processor as bip
+    img = cam_loop.one_frame()
+    board_processor = bip.BoardProcessor()
+    board_processor._show_image(img, show_this_image=True)
+    return state
 
 def _loop_and_play_randoms():
     global shouldLoop
@@ -150,6 +157,11 @@ INSTRUCTIONS = [
         name='stop EVERLOOP',
         description='Make the everlooping stop!',
         function=stop_everloop),
+    Instruction(
+        keystroke='i',
+        name='Test image',
+        description='Take and display a test image from the camera',
+        function=test_image),
     Instruction(
         keystroke='q',
         name='Quit',
