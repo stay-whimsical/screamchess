@@ -5,7 +5,7 @@ def show_webcam(mirror=False):
 	while True:
 		ret_val, img = cam.read()
 		#chess_state = process_image(img)
-		cv2.imshow('webcam', img)
+		cv2.imshow('webcam', img) 
 		if cv2.waitKey(1) == 27:
 			break
 
