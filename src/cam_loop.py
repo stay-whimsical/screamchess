@@ -69,8 +69,8 @@ def main():
         #img = one_frame()
         print('reading a frame')
         try:
-            img = blend_images(5)
-            tmp_im_path = '/tmp/img.jpg' 
+            img = one_frame()
+            tmp_im_path = '/tmp/img.jpg'
             cv2.imwrite(tmp_im_path, img)
             board_processor._cache_pil_im(tmp_im_path)
             board_processor._show_image(img, show_this_image=False)
