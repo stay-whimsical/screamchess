@@ -6,13 +6,27 @@ Karen, Pablo and Sara are doing this as an installation.
 ## How to build ScreamChess
 
 ### Materials
+#### For the Interactive Chess Board
 * raspberry pi
 * micro SD card (pre-loaded with NOOBs, or etch it yourself)
 * laptop speakers
 * raspberry pi compatible camera
 * 24x24 acryllic
+* QR Codes printed on paper and affixed with tape, or stickers
 
-### Materials for the Beautiful Table
+#### For the Game
+* Chess pieces (with as wide a base as possible)
+
+#### Tools for the Electronics
+* exacto knife and tweezers or purpose built tool to adjust focus on camera
+* MicroSD card reader/writer
+* Monitor, HDMI Cable, Keyboard, (optional) mouse
+* Power for raspberry pi
+* Many extension cords
+
+### The Beautiful Table
+
+#### Materials
 * 8 24x13x3/16 inch wooden panels
 * 4 30 inch posts
 * 16 corner brackets
@@ -21,6 +35,12 @@ Karen, Pablo and Sara are doing this as an installation.
 * Laser cutter
 * LED strip
 * LED connectors
+* Power for the LED
+* Extension cords
+
+#### Tools
+* Drill with phillips drill bit
+
 
 ### Running the Code
 First you need to install the necessary packages:
