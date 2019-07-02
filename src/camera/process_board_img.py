@@ -169,10 +169,10 @@ def process_squares(image, num_squares, qr, color, shrink=0,
     # Note, below is nicer python, but it changed the order in which the
     # columns were processed....TODO: need to investigate
     #state = [[0]*num_squares]*num_squares
-    state = [[0 for x in xrange(num_squares)] for x in xrange(num_squares)]
+    state = [[0 for x in range(num_squares)] for x in range(num_squares)]
 
-    for i in xrange(num_squares):
-        for j in xrange(num_squares):
+    for i in range(num_squares):
+        for j in range(num_squares):
             crop_box = (w_offset*i + shrink, h_offset*j + shrink,
                         w_offset*(i+1) - shrink, h_offset*(j+1) - shrink)
             crop = image.crop(crop_box)

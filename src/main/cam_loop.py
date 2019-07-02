@@ -10,9 +10,9 @@ def show_webcam(mirror=False):
         cv2.imshow('webcam', img)
         if cv2.waitKey(1) == 27:
             break
-            
-          
- 
+
+
+
 def one_frame(id=0):
    cam = cv2.VideoCapture(id)
    ret_val, img = cam.read()
@@ -61,14 +61,14 @@ def main():
     while True:
         #img = one_frame()
         img = blend_images(5)
-        tmp_im_path = '/tmp/img.jpg' 
+        tmp_im_path = '/tmp/img.jpg'
         cv2.imwrite(tmp_im_path, img)
         board_processor._cache_pil_im(tmp_im_path)
         board_processor._show_image(img, show_this_image=False)
         board_processor.update_state(img)
         ret_state = board_processor.get_cur_state()
         if ret_state != state:
-            print '\033[34;1m Got state change, new state = \033[0m'
+            print('\033[34;1m Got state change, new state = \033[0m')
             for row in ret_state:
                 m = []
                 for x in row:
@@ -76,10 +76,10 @@ def main():
                         m.append('-')
                     else:
                         m.append('P')
-                print m
+                print(m)
             state = ret_state
         else:
-            print 'No new state',
+            print('No new state',)
     # show_webcam()
 
 if __name__ == '__main__':

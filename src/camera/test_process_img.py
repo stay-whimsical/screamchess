@@ -99,13 +99,13 @@ class TestWhiteCheck(unittest.TestCase):
     def test_row_white_fail(self):
         pixels = self.pixels[:]
         # Add a solid black row to the bottom
-        pixels.extend([(0,0,0,255) for x in xrange(6)])
+        pixels.extend([(0,0,0,255) for x in range(6)])
         self.assertFalse(pi.row_white(pixels, 7, 6, 10))
 
     def test_col_white_fail(self):
         pixels = self.pixels[:]
         # Add a solid black row to the bottom
-        pixels.extend([(0,0,0,255) for x in xrange(6)])
+        pixels.extend([(0,0,0,255) for x in range(6)])
         self.assertFalse(pi.col_white(pixels, 1, 10))
         self.assertFalse(pi.col_white(pixels, 2, 10))
         self.assertFalse(pi.col_white(pixels, 3, 10))

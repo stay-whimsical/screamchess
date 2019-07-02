@@ -65,7 +65,7 @@ def get_square_centers_from_board(image_path, num_squares, show_images=False):
     # Filter out small contours around noise
     cnts = [c for c in cnts if len(c) > contour_len_threshold]
 
-    print "I found %d %s shapes" % (len(cnts), 'blue')
+    print("I found %d %s shapes" % (len(cnts), 'blue'))
     # loop over the contours and filter out ones that are too small
     for c in cnts:
         # # draw the contour and show it

@@ -33,7 +33,7 @@ class BoardProcessor:
         self._num_squares = 8  # Width of board, standard chess board
         self._contour_len_threshold = 10  # Perimeter of shape in pixels
         self._centers = []
-        self._cur_state = [ [None for x in xrange(self._num_squares)] for x in xrange(self._num_squares) ]
+        self._cur_state = [ [None for x in range(self._num_squares)] for x in range(self._num_squares) ]
         self._debug_images = debug_image_mode
         self._color_map = {'WB': (np.array([110, 50, 50]),  # light blue
                                   np.array([130, 255, 255])),
@@ -121,9 +121,9 @@ class BoardProcessor:
                 center_dict[point] = (i, j)
             center_array.append(row)
         if self._debug_images:
-            print 'Got centers of board:'
+            print('Got centers of board:')
             for row in center_array:
-                print row
+                print(row)
         return center_dict
 
     def _point_within_square(self, shape_center, half_square_threshold):
@@ -191,8 +191,8 @@ class BoardProcessor:
         half_square_threshold = height / (self._num_squares * 2)
         # Fun python fact - the code commented below makes copies of each list
         # board = [ [0]*self._num_squares ]*self._num_squares
-        board = [ [None for x in xrange(self._num_squares)]
-                  for x in xrange(self._num_squares)]
+        board = [ [None for x in range(self._num_squares)]
+                  for x in range(self._num_squares)]
         # Get a convolved image for each color in our color map
         for piece, color_range in self._color_map.items():
             filtered_image = self._get_convolved_image(image, color_range)
@@ -212,27 +212,34 @@ class BoardProcessor:
         return board
 
     def _get_circle_in_square(self, im):
-
         imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
         #circle = self._get_circle(imgray)
         self._show_image(imgray)
-#       Night time Treshold values # TODO make this something you pass in from the command line 
+#       Night time Treshold values # TODO make this something you pass in from the command line
+
         ret,thresh = cv2.threshold(imgray,182,222,0)
 #       Day Time Treshold values and invert
 #        ret,thresh = cv2.threshold(imgray,100,160,0)
 #        thresh = cv2.bitwise_not(thresh)
-        # print 'thresh = ', thresh
+        # print('thresh = ', thresh
         self._show_image(thresh)
         mask = cv2.inRange(thresh, 100, 255)
         self._show_image(mask)
 
         # RETR_LIST=1, CHAIN_APPROX_SIMPLE=2
-        contours, heirarchy = cv2.findContours(
+        contours, heirarchy, question = cv2.findContours(
              mask, cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+
+        # FIXME: What is question?
+        if question is None:
+            return False
+        else:
+            print("Got question = ", question)
+
         #cv2.drawContours(im, contours, -1, (0,255,0), 3)
         circles = []
         for cnt in contours:
-            (x,y),radius = cv2.minEnclosingCircle(cnt)
+            (x,y), radius = cv2.minEnclosingCircle(cnt)
             center = (int(x),int(y))
             radius = int(radius)
             area = cv2.contourArea(cnt)
@@ -245,15 +252,15 @@ class BoardProcessor:
             if radius < 5 or radius > 15:
                 continue
             if self._debug_images:
-                print 'contour area =', area, 'circle_area = ', circle_area
-            
+                print('contour area =', area, 'circle_area = ', circle_area)
+
             cv2.circle(im, center, radius, (0, 255, 0), 2)
             self._show_image(im, show_this_image=False)
             circles.append(center)
         if len(circles) == 1:
             return True
         elif len(circles) > 1:
-            print '\033[31;1m SOMETHING WEIRD HERE...\033[0m', circles
+            print('\033[31;1m SOMETHING WEIRD HERE...\033[0m', circles)
         else:
             return False
     def _get_circle(self, im):
@@ -265,9 +272,6 @@ class BoardProcessor:
                 self._show_image(im)
                 return True
         return False
-
-
-
 
     def _get_convolved_image(self, image, color_range):
         """Get an image mask filtered to just the locations of a certain
@@ -329,4 +333,3 @@ class BoardProcessor:
 
         self._show_image(image, 'Centers')
         return centers
-

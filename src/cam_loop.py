@@ -59,7 +59,7 @@ def main_get_color_ranges():
     show_all_hsv_color_ranges(10, board_processor)
 
 def main():
-    print 'Now initializing board processor'
+    print('Now initializing board processor')
     board_processor = bip.BoardProcessor(debug_image_mode=False)
     #board_processor = test_color_ranges()
     #board_processor = bip.BoardProcessor()
@@ -67,14 +67,13 @@ def main():
     board = Board()
     while True:
         #img = one_frame()
-        print 'reading 5 frames'
+        print('reading a frame')
         try:
             img = blend_images(5)
             tmp_im_path = '/tmp/img.jpg' 
             cv2.imwrite(tmp_im_path, img)
             board_processor._cache_pil_im(tmp_im_path)
             board_processor._show_image(img, show_this_image=False)
-            print 'updating state'
             board_processor.update_state(img)
             ret_state = board_processor.get_cur_state()
             if ret_state != state:
@@ -86,7 +85,7 @@ def main():
                 piece_index = random.randint(0, len(pieces) - 1)
                 if pieces:
                     play_sound(pieces[piece_index], random_action())
-                print '\033[34;1m Got state change, new state = \033[0m'
+                print('\033[34;1m Got state change, new state = \033[0m')
                 for row in ret_state:
                     m = []
                     for x in row:
@@ -94,12 +93,12 @@ def main():
                             m.append('-')
                         else:
                             m.append('P')
-                    print m
+                    print(m)
                 state = ret_state
             else:
-                print 'No new state',
+                print('No new state',)
         except Exception as e:
-            print '\033[31;1m GOT EXCEPTION', e, '\033[0m'
+            print('\033[31;1m GOT EXCEPTION', e, '\033[0m')
     # show_webcam()
 
 if __name__ == '__main__':
