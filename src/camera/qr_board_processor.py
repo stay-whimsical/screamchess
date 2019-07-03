@@ -20,15 +20,16 @@ class BoardImg:
         height, width, channels = img.shape
         self.height = height
         self.width = width
-        self.cell_radius = self.height / (self.num_squares*2)
+        self.cell_radius = self.height / (self.num_squares)
 
         self.cell_width = self.width/self.num_squares
         self.cell_height = self.height/self.num_squares
 
         self.centers = []
         for j in range(self.num_squares):
+            # FIXME: I might have width and height backwards
             xs = [ i*self.cell_width for i in range(self.num_squares) ]
-            ys = [ j*self.cell_height for i in range(self.num_squares) ]
+            ys = [ j*self.cell_height for j in range(self.num_squares) ]
             self.centers.extend(list(zip(xs, ys)))
         print("centers = ", self.centers)
 
@@ -43,14 +44,14 @@ class BoardImg:
             ul = int(y)
             ur = int(y + self.cell_radius)
             print("indices = ", ll, lr, ul, ur)
-            cropped = self.raw_img[ll:lr, ul:ur]
+            cropped = self.raw_img[ul:ur, ll:lr]
             i = index % (self.num_squares)
             j = math.floor(index / self.num_squares)
             self.square_index += 1
             yield (i, j, cropped)
 
-    def get_pil():
-        raise UnimplementedError
+    def show(self):
+        cv2.imshow("Processing Image", self.raw_img)
 
 class QRBoardProcessor:
     """
@@ -63,12 +64,11 @@ class QRBoardProcessor:
         self._cur_state = self.empty_state()
 
     def update(self, captured_img):
-        # FIXME: cache img if that is something you want to do
         img = BoardImg(captured_img)
 
-        state = self.get_board_state(img)
-        if state != self._cur_state:
-            self._cur_state = state
+        img.show()
+
+        self._cur_state = self.get_board_state(img)
         return self._cur_state
 
     @staticmethod
@@ -77,14 +77,15 @@ class QRBoardProcessor:
                  for x in range(QRBoardProcessor.board_width) ]
 
     @staticmethod
-    def scan_qr_code(image):
+    def scan_qr_code(img):
         """Get codes from image object
 
-        :param image: an image object (from PIL.Image)
-        :return: result of zbarlight scan_code (list of text scanned from qrcode)
+        :param img: a numpy array, that must be converted to PIL.Image for
+                    zbarlight
+        :return: result of zbarlight scan_code (list of text scanned from
+                 qrcode)
         """
-        return zbarlight.scan_codes('qrcode', image)
-
+        return zbarlight.scan_codes('qrcode', Image.fromarray(img))
 
     def get_board_state(self, img):
         """Looks at each square, using the "center" hints, and reads QR codes.
@@ -96,9 +97,7 @@ class QRBoardProcessor:
         for (i, j, square) in img.next_square():
             cv2.imshow("square", square)
             cv2.waitKey(0)
-            im = np.array(square)
-            tmp_img_pil = img.get_tmp_img_pil()
-            qr = self.scan_qr_code(tmp_img_pil)
+            qr = self.scan_qr_code(square)
             print("Got QR code: ", qr, " for [", i, ", ", j, "]")
             if qr is not None:
                 board[i][j] = True
