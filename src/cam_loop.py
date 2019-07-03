@@ -1,19 +1,9 @@
-from camera import board_image_processor as bip
+# from camera import board_image_processor as bip
+from camera import qr_board_processor as bip
 from chess.models import *
 import cv2
 import numpy as np
 from media.sound import *
-
-def show_webcam(mirror=False):
-    cam = cv2.VideoCapture(0)
-    while True:
-        ret_val, img = cam.read()
-        #chess_state = process_image(img)
-        cv2.imshow('webcam', img)
-        if cv2.waitKey(1) == 27:
-            break
-
-
 
 def one_frame(id=0):
     # FIXME: Store the cam
@@ -21,9 +11,6 @@ def one_frame(id=0):
    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
    ret_val, img = cam.read()
-   #print("width: " + str(cam.get(3)))
-   #print("height: " + str(cam.get(4)))
-   # cv2.imwrite("testimage3.png", img)
    return img
 
 def show_all_hsv_color_ranges(steps, board_processor):
@@ -60,28 +47,22 @@ def main_get_color_ranges():
 
 def main():
     print('Now initializing board processor')
-    board_processor = bip.BoardProcessor(debug_image_mode=False)
-    #board_processor = test_color_ranges()
-    #board_processor = bip.BoardProcessor()
-    state = board_processor.get_cur_state()
+    board_processor = bip.QRBoardProcessor()
     board = Board()
+    state = board_processor.empty_state()
     while True:
-        #img = one_frame()
-        print('reading a frame')
         try:
             img = one_frame()
-            tmp_im_path = '/tmp/img.jpg'
-            cv2.imwrite(tmp_im_path, img)
-            board_processor._cache_pil_im(tmp_im_path)
-            board_processor._show_image(img, show_this_image=False)
-            board_processor.update_state(img)
-            ret_state = board_processor.get_cur_state()
+            ret_state = board_processor.update(img)
             if ret_state != state:
+
                 pieces = []
                 for i in range(0,8):
                     for j in range(0,8):
                         if board.state[i][j].piece:
                             pieces.append(board.state[i][j].piece)
+
+                # FIXME: Currently does not track specific pieces
                 piece_index = random.randint(0, len(pieces) - 1)
                 if pieces:
                     play_sound(pieces[piece_index], random_action())
@@ -98,9 +79,8 @@ def main():
             else:
                 print('No new state',)
         except Exception as e:
-            print('\033[31;1m GOT EXCEPTION', e, '\033[0m')
-    # show_webcam()
+            print('\033[31;1m Could not process frame due to', e, '\033[0m')
+            raise e
 
 if __name__ == '__main__':
     main()
-    #main_get_color_ranges()

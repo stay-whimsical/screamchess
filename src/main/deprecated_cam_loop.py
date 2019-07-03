@@ -2,17 +2,6 @@ from camera import board_image_processor as bip
 import cv2
 import numpy as np
 
-def show_webcam(mirror=False):
-    cam = cv2.VideoCapture(0)
-    while True:
-        ret_val, img = cam.read()
-        #chess_state = process_image(img)
-        cv2.imshow('webcam', img)
-        if cv2.waitKey(1) == 27:
-            break
-
-
-
 def one_frame(id=0):
    cam = cv2.VideoCapture(id)
    ret_val, img = cam.read()

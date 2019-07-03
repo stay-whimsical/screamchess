@@ -96,6 +96,20 @@ def test_image(state, events):
     board_processor._show_image(img, show_this_image=True)
     return state
 
+def show_webcam(state, events):
+    import cv2
+    cam = cv2.VideoCapture(0)
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
+    while True:
+        ret_val, img = cam.read()
+        cv2.imshow('webcam', img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cam.release()
+    cv2.destroyAllWindows()
+    return state
+
 def _loop_and_play_randoms():
     global shouldLoop
     global MIN_EVERLOOP_SECONDS
@@ -162,6 +176,11 @@ INSTRUCTIONS = [
         name='Test image',
         description='Take and display a test image from the camera',
         function=test_image),
+    Instruction(
+        keystroke='w',
+        name='Show webcam',
+        description='Run the webcam for setup, press q when done.',
+        function=show_webcam),
     Instruction(
         keystroke='q',
         name='Quit',

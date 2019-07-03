@@ -67,8 +67,10 @@ sudo apt-get install -y \
     python3-pyqt5 \
     libatlas-base-dev \
     libqt4-test
+
 sudo pip3 install events
 sudo pip3 install opencv-python
+sudo pip3 install zbarlight
 
 cd src
 python3 main.py
