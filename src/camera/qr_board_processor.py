@@ -6,7 +6,6 @@ import operator
 from pyzbar import pyzbar
 import zbarlight
 from PIL import Image
-from camera.setup_board import get_square_centers_from_board
 
 class BoardImg:
     """

@@ -71,6 +71,9 @@ sudo apt-get install -y \
 
 sudo pip3 install events
 sudo pip3 install opencv-python
+sudo pip3 install imutils
+
+# For QR Code Processing
 sudo pip3 install zbarlight
 sudo pip3 install pyzbar
 
