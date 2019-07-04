@@ -5,7 +5,6 @@ import math
 import operator
 from pyzbar import pyzbar
 import zbarlight
-from PIL import Image
 
 class BoardImg:
     """
@@ -92,8 +91,7 @@ class QRBoardProcessor:
         :return: result of zbarlight scan_code (list of text scanned from
                  qrcode)
         """
-        # return pyzbar.decode(Image.fromarray(img), symbols=[pyzbar.ZBarSymbol.QRCODE])
-        return zbarlight.scan_codes('qrcode', Image.fromarray(img))
+        return pyzbar.decode(img, symbols=[pyzbar.ZBarSymbol.QRCODE])
 
     def get_board_state(self, img):
         """Looks at each square, using the "center" hints, and reads QR codes.
