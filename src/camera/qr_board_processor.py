@@ -29,7 +29,7 @@ class BoardImg:
         for j in range(self.num_squares):
             # FIXME: I might have width and height backwards
             xs = [ i*self.cell_width for i in range(self.num_squares) ]
-            ys = [ j*self.cell_height for j in range(self.num_squares) ]
+            ys = [ j*self.cell_height for i in range(self.num_squares) ]
             self.centers.extend(list(zip(xs, ys)))
         print("centers = ", self.centers)
 
@@ -100,6 +100,6 @@ class QRBoardProcessor:
             qr = self.scan_qr_code(square)
             print("Got QR code: ", qr, " for [", i, ", ", j, "]")
             if qr is not None:
-                board[i][j] = True
+                board[i][j] = qr
 
         return board

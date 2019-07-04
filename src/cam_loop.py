@@ -73,7 +73,7 @@ def main():
                         if x is None:
                             m.append('-')
                         else:
-                            m.append('P')
+                            m.append(x)
                     print(m)
                 state = ret_state
             else:
