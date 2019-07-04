@@ -43,9 +43,6 @@ if __name__ == '__main__':
     e = time.time()
     print("time to take photo:", e - t)
 
-    tmp_im_path = '/tmp/img.jpg'
-    cv2.imwrite(tmp_im_path, img)
-
     codes = find_qr_codes(img)
     q = time.time()
     print("time to find qr codes:", q - e)
