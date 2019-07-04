@@ -13,6 +13,7 @@ Karen, Pablo and Sara are doing this as an installation.
 * raspberry pi compatible camera
 * 24x24 acryllic
 * QR Codes printed on paper and affixed with tape, or stickers
+* Raspberry pi case & camera case
 
 #### For the Game
 * Chess pieces (with as wide a base as possible)
@@ -71,6 +72,7 @@ sudo apt-get install -y \
 sudo pip3 install events
 sudo pip3 install opencv-python
 sudo pip3 install zbarlight
+sudo pip3 install pyzbar
 
 cd src
 python3 main.py

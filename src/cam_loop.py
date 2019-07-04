@@ -3,6 +3,7 @@ from camera import qr_board_processor as bip
 from chess.models import *
 import cv2
 import numpy as np
+import sys
 from media.sound import *
 
 def one_frame(id=0):
@@ -46,8 +47,13 @@ def main_get_color_ranges():
     show_all_hsv_color_ranges(10, board_processor)
 
 def main():
-    print('Now initializing board processor')
-    board_processor = bip.QRBoardProcessor()
+    # FIXME add real arg handling if we need it, e.g. num visible squares...
+    cell_radius = None
+    if len(sys.argv) > 1:
+       cell_radius = float(sys.argv[1])
+    debug = len(sys.argv) > 2
+    print('Now initializing board processor', 'with debug ' if debug else '')
+    board_processor = bip.QRBoardProcessor(cell_radius=cell_radius, debug=debug)
     board = Board()
     state = board_processor.empty_state()
     while True:
@@ -66,6 +72,7 @@ def main():
                 piece_index = random.randint(0, len(pieces) - 1)
                 if pieces:
                     play_sound(pieces[piece_index], random_action())
+
                 print('\033[34;1m Got state change, new state = \033[0m')
                 for row in ret_state:
                     m = []

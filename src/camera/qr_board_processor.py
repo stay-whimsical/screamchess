@@ -3,6 +3,7 @@ import numpy as np
 import bisect
 import math
 import operator
+from pyzbar import pyzbar
 import zbarlight
 from PIL import Image
 from camera.setup_board import get_square_centers_from_board
@@ -15,12 +16,15 @@ class BoardImg:
     image_pixel_height = 960
     num_squares = 8
 
-    def __init__(self, img):
+    def __init__(self, img, cell_radius = None, debug = False):
         self.raw_img = img
         height, width, channels = img.shape
         self.height = height
         self.width = width
-        self.cell_radius = self.height / (self.num_squares)
+        if cell_radius is None:
+            self.cell_radius = self.height / (self.num_squares)
+        else:
+            self.cell_radius = cell_radius
 
         self.cell_width = self.width/self.num_squares
         self.cell_height = self.height/self.num_squares
@@ -31,27 +35,32 @@ class BoardImg:
             xs = [ i*self.cell_width for i in range(self.num_squares) ]
             ys = [ j*self.cell_height for i in range(self.num_squares) ]
             self.centers.extend(list(zip(xs, ys)))
-        print("centers = ", self.centers)
 
         self.square_index = 0
 
+        self.debug = debug
+
     def next_square(self):
         """Iterate through chessboard squares"""
-        print("centers = ", self.centers)
+        if self.debug:
+            print("centers = ", self.centers)
         for index, (x, y) in enumerate(self.centers):
             ll = int(x)
             lr = int(x+self.cell_radius)
             ul = int(y)
             ur = int(y + self.cell_radius)
-            print("indices = ", ll, lr, ul, ur)
             cropped = self.raw_img[ul:ur, ll:lr]
             i = index % (self.num_squares)
             j = math.floor(index / self.num_squares)
             self.square_index += 1
+            if self.debug:
+                print("indices = ", ll, lr, ul, ur)
+                cv2.imshow("current square", cropped)
             yield (i, j, cropped)
 
     def show(self):
-        cv2.imshow("Processing Image", self.raw_img)
+        if self.debug:
+            cv2.imshow("Processing Image", self.raw_img)
 
 class QRBoardProcessor:
     """
@@ -60,16 +69,15 @@ class QRBoardProcessor:
     """
     board_width = 8
 
-    def __init__(self):
-        self._cur_state = self.empty_state()
+    def __init__(self, cell_radius = None, debug = False):
+        self.debug = debug
+        self.cell_radius = cell_radius
 
     def update(self, captured_img):
-        img = BoardImg(captured_img)
-
+        img = BoardImg(captured_img, self.cell_radius, self.debug)
         img.show()
-
-        self._cur_state = self.get_board_state(img)
-        return self._cur_state
+        print("got all qr codes:", self.scan_qr_code(captured_img))
+        return self.get_board_state(img)
 
     @staticmethod
     def empty_state():
@@ -85,6 +93,7 @@ class QRBoardProcessor:
         :return: result of zbarlight scan_code (list of text scanned from
                  qrcode)
         """
+        # return pyzbar.decode(Image.fromarray(img), symbols=[pyzbar.ZBarSymbol.QRCODE])
         return zbarlight.scan_codes('qrcode', Image.fromarray(img))
 
     def get_board_state(self, img):
@@ -95,11 +104,12 @@ class QRBoardProcessor:
         """
         board = self.empty_state()
         for (i, j, square) in img.next_square():
-            cv2.imshow("square", square)
+
             cv2.waitKey(0)
             qr = self.scan_qr_code(square)
-            print("Got QR code: ", qr, " for [", i, ", ", j, "]")
             if qr is not None:
+                if self.debug:
+                    print("Got QR code: ", qr, " for [", i, ", ", j, "]")
                 board[i][j] = qr
 
         return board
