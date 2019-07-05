@@ -1,5 +1,4 @@
 # from camera import board_image_processor as bip
-from camera import qr_board_processor as bip
 from chess.models import *
 import cv2
 import numpy as np
@@ -53,7 +52,10 @@ def main():
        cell_radius = float(sys.argv[1])
     debug = len(sys.argv) > 2
     print('Now initializing board processor', 'with debug ' if debug else '')
-    board_processor = bip.QRBoardProcessor(cell_radius=cell_radius, debug=debug)
+    # from camera import qr_board_processor as bip
+    # board_processor = bip.QRBoardProcessor(cell_radius=cell_radius, debug=debug)
+    from camera import green_board_processor as bip
+    board_processor = bip.GreenBoardProcessor()
     board = Board()
     state = board_processor.empty_state()
     while True:

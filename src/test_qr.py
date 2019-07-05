@@ -6,7 +6,9 @@ import imutils
 import time
 
 def find_qr_codes(img):
-    codes = pyzbar.decode(img, symbols=[pyzbar.ZBarSymbol.QRCODE])
+    # First, convert to grayscale
+    grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    codes = pyzbar.decode(grey, symbols=[pyzbar.ZBarSymbol.QRCODE])
     print("\ngot codes\n", "\n".join([str(c) for c in codes]))
 
     return codes
@@ -42,6 +44,19 @@ if __name__ == '__main__':
     ret_val, img = cam.read()
     e = time.time()
     print("time to take photo:", e - t)
+    #qrDecoder = cv2.QRCodeDetector()
+    #data, bbox, rectifiedImage = qrDecoder.detectAndDecode(img)
+    #if len(data) > 0:
+      #print("decoded data: {}".format(data))
+      #display(img, bbox)
+      #rectifiedImage = numpy.uint8(rectifiedImage)
+      #cv2.imshow("RectifiedQR", rectifiedImage)
+    #else:
+      #print("QR code not detected")
+      #cv2.imshow("results", img)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+
 
     codes = find_qr_codes(img)
     q = time.time()
